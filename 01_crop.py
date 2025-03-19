@@ -14,7 +14,7 @@ def get_video_info(video_path):
 
 
 def detect_crop_parameters(video_path):
-    """使用 ffmpeg 运行 cropdetect 过滤器，仅分析视频的前10秒，提取出现次数最多的裁剪参数"""
+    """使用 ffmpeg 运行 cropdetect 过滤器，仅分析视频的中间1/3，提取出现次数最多的裁剪参数"""
     try:
         # 获取视频时长
         probe = ffmpeg.probe(video_path)
@@ -72,15 +72,15 @@ def crop_video_with_detected_params(video_path, output_path):
     else:
         print("未检测到有效的裁剪参数，跳过裁剪")
 
+
 def crop_video(video_path, output_path, crop_width, crop_height, x_offset, y_offset):
-    """使用 ffmpeg-python 裁剪视频"""
-    (
-        ffmpeg
-        .input(video_path)
-        .filter('crop', crop_width, crop_height, x_offset, y_offset)
-        .output(output_path, acodec='copy', vcodec='libx264')
-        .run()
-    )
+    """使用 ffmpeg-python 裁剪视频，并保留音频"""
+    input_video = ffmpeg.input(video_path)  # 读取输入视频
+    video = input_video.video.filter('crop', crop_width, crop_height, x_offset, y_offset)  # 裁剪视频
+    audio = input_video.audio  # 获取音频流
+    out = ffmpeg.output(audio, video, output_path, acodec='copy', vcodec='libx264')  # 输出文件
+    out.run()  # 运行 ffmpeg 命令
+
 
 def generate_output_path(input_path, specified_output=None):
     """生成输出文件路径，确保不覆盖已有文件"""
@@ -98,6 +98,7 @@ def generate_output_path(input_path, specified_output=None):
         output_path = f"{base}-new{ext}"
     
     return output_path
+
 
 def main():
     parser = argparse.ArgumentParser(description="裁剪视频以适应9:16比例。")
@@ -123,6 +124,7 @@ def main():
               
     else:
         print("视频已经是9:16比例，无需裁剪。")
+
 
 if __name__ == "__main__":
     main()
