@@ -8,7 +8,8 @@ import csv
 def parse_args():
     parser = argparse.ArgumentParser(description="Extract frames from video, apply sharpening, binarization, compute similarity with reference image, and generate subtitles.")
     parser.add_argument("--input", type=str, required=True, help="Path to the input video file.")
-    parser.add_argument("--output", type=str, default="tmp-frame", help="Output directory for extracted frames and similarity results.")
+    parser.add_argument("--output", type=str, default="tmp-frame", help="Output directory for similarity results.")
+    parser.add_argument("--debug", action="store_true", help="Enable debug mode to save tmp_frame images.")
     return parser.parse_args()
 
 def is_valid_aspect_ratio(width, height):
@@ -31,10 +32,11 @@ def compute_similarity(image1, image2):
     similarity = 1 - (np.sum(diff) / (255 * image1.shape[0] * image1.shape[1]))
     return similarity
 
-def extract_frames(video_path, output_dir):
-    if os.path.exists(output_dir):
-        shutil.rmtree(output_dir)
-    os.makedirs(output_dir, exist_ok=True)
+def extract_frames(video_path, output_dir, debug):
+    if debug:
+        if os.path.exists(output_dir):
+            shutil.rmtree(output_dir)
+        os.makedirs(output_dir, exist_ok=True)
     
     cap = cv2.VideoCapture(video_path)
     if not cap.isOpened():
@@ -78,19 +80,25 @@ def extract_frames(video_path, output_dir):
         cropped_frame = frame[y1:y2, x1:x2]
         sharpened_frame = enhance_sharpness(cropped_frame)
         binary_frame = binarize_image(sharpened_frame)
-        frame_filename = os.path.join(output_dir, f"{frame_count:06d}.png")
-        cv2.imwrite(frame_filename, binary_frame)
+        
+        if debug:
+            frame_filename = os.path.join(output_dir, f"{frame_count:06d}.png")
+            cv2.imwrite(frame_filename, binary_frame)
         
         similarity = compute_similarity(binary_frame, reference_image)
-        similarities.append([frame_filename, similarity])
+        similarities.append([frame_count, similarity])
         
         if similarity > 0.86:
             if active_interval is None:
-                active_interval = [time_stamp, None]  # 开始时间
+                active_interval = [None, None]  # 开始时间稍后填充
+            active_interval[1] = time_stamp  # 结束时间更新
         
         if active_interval is not None and similarity < 0.9:
-            active_interval[1] = time_stamp  # 结束时间
             if not high_similarity_intervals or (time_stamp - high_similarity_intervals[-1][1] > 1.0):
+                if high_similarity_intervals:
+                    active_interval[0] = high_similarity_intervals[-1][1] + 0.1  # 上一个字幕的结束时间 + 0.1s
+                else:
+                    active_interval[0] = 0.0  # 第一段字幕从0开始
                 high_similarity_intervals.append(active_interval)
             else:
                 high_similarity_intervals[-1][1] = time_stamp  # 合并相邻的毛刺段
@@ -100,11 +108,12 @@ def extract_frames(video_path, output_dir):
     
     cap.release()
     
-    csv_path = os.path.join(output_dir, "_a.csv")
-    with open(csv_path, mode="w", newline="") as csv_file:
-        writer = csv.writer(csv_file)
-        writer.writerow(["Frame", "Similarity"])
-        writer.writerows(similarities)
+    if debug:
+        csv_path = os.path.join(output_dir, "_a.csv")
+        with open(csv_path, mode="w", newline="") as csv_file:
+            writer = csv.writer(csv_file)
+            writer.writerow(["Frame", "Similarity"])
+            writer.writerows(similarities)
     
     video_dir, video_filename = os.path.split(video_path)
     video_name, _ = os.path.splitext(video_filename)
@@ -129,8 +138,10 @@ def extract_frames(video_path, output_dir):
             sub_file.write(f"Dialogue: 0,{start_str},{end_str},Default,,0,0,0,,{seq}\n")
             seq += 1
     
-    print(f"Extracted {frame_count} frames, saved similarity scores to {csv_path}, and generated subtitles at {subtitle_path}")
+    print(f"Extracted {frame_count} frames, and generated subtitles at {subtitle_path}")
+    if debug:
+        print(f"Saved frame images and similarity data at {output_dir}")
 
 if __name__ == "__main__":
     args = parse_args()
-    extract_frames(args.input, args.output)
+    extract_frames(args.input, args.output, args.debug)
