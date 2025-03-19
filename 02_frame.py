@@ -10,6 +10,7 @@ def parse_args():
     parser.add_argument("--input", type=str, required=True, help="Path to the input video file.")
     parser.add_argument("--output", type=str, default="tmp-frame", help="Output directory for similarity results.")
     parser.add_argument("--debug", action="store_true", help="Enable debug mode to save tmp_frame images.")
+    parser.add_argument("--slides", action="store_true", help="Enable slides generation for high similarity intervals.")
     return parser.parse_args()
 
 def is_valid_aspect_ratio(width, height):
@@ -32,7 +33,7 @@ def compute_similarity(image1, image2):
     similarity = 1 - (np.sum(diff) / (255 * image1.shape[0] * image1.shape[1]))
     return similarity
 
-def extract_frames(video_path, output_dir, debug):
+def extract_frames(video_path, output_dir, debug, slides):
     if debug:
         if os.path.exists(output_dir):
             shutil.rmtree(output_dir)
@@ -114,7 +115,7 @@ def extract_frames(video_path, output_dir, debug):
             writer = csv.writer(csv_file)
             writer.writerow(["Frame", "Similarity"])
             writer.writerows(similarities)
-    
+
     video_dir, video_filename = os.path.split(video_path)
     video_name, _ = os.path.splitext(video_filename)
     subtitle_path = os.path.join(video_dir, f"{video_name}.ass")
@@ -138,10 +139,29 @@ def extract_frames(video_path, output_dir, debug):
             sub_file.write(f"Dialogue: 0,{start_str},{end_str},Default,,0,0,0,,{seq}\n")
             seq += 1
     
+    if slides:
+        slides_dir = os.path.join(video_dir, "slides")
+        if os.path.exists(slides_dir):
+            shutil.rmtree(slides_dir)
+        os.makedirs(slides_dir, exist_ok=True)
+
+        for seq, (start_time, end_time) in enumerate(high_similarity_intervals, start=1):
+            frame_target = int(end_time * fps) - 2
+            cap = cv2.VideoCapture(video_path)
+            cap.set(cv2.CAP_PROP_POS_FRAMES, frame_target)
+            ret, frame = cap.read()
+            if ret:
+                x1_s, y1_s = int(80 * scale_x), int(1290 * scale_y)
+                x2_s, y2_s = int(945 * scale_x), int(1610 * scale_y)
+                slide_frame = frame[y1_s:y2_s, x1_s:x2_s]
+                slide_path = os.path.join(slides_dir, f"{seq:06d}.png")
+                cv2.imwrite(slide_path, slide_frame)
+            cap.release()
+    
     print(f"Extracted {frame_count} frames, and generated subtitles at {subtitle_path}")
     if debug:
         print(f"Saved frame images and similarity data at {output_dir}")
 
 if __name__ == "__main__":
     args = parse_args()
-    extract_frames(args.input, args.output, args.debug)
+    extract_frames(args.input, args.output, args.debug, args.slides)
