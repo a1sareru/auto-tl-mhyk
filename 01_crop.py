@@ -16,9 +16,18 @@ def get_video_info(video_path):
 def detect_crop_parameters(video_path):
     """使用 ffmpeg 运行 cropdetect 过滤器，仅分析视频的前10秒，提取出现次数最多的裁剪参数"""
     try:
+        # 获取视频时长
+        probe = ffmpeg.probe(video_path)
+        duration = float(probe['format']['duration'])
+
+        # 计算分析区间
+        start_time = duration / 3
+        analysis_duration = duration / 3
+
+        # 运行 cropdetect
         result = (
             ffmpeg
-            .input(video_path, t=20) # 仅分析前20秒
+            .input(video_path, ss=start_time, t=analysis_duration)  # 选择中间 1/3 时长
             .output('null', vf="cropdetect", format='null', v='info')
             .run(capture_stderr=True)
         )
@@ -33,7 +42,15 @@ def detect_crop_parameters(video_path):
             most_common_crop, count = Counter(crop_params).most_common(1)[0]  # 取出现次数最多的
             print(f"检测到最常见的裁剪参数: {most_common_crop} (出现 {count} 次)")
             width, height, x, y = map(int, most_common_crop.split(':'))
-            return height * 9 / 16, height, 0, y
+            if x > 0:
+                width = width + 2 * x
+                x = 0
+            # turn weight: height into 9:16
+            if width * 16 < height * 9:
+                height = width * 16 // 9
+            
+            print(f"转换为9:16比例: width={width}, height={height}, x={x}, y={y}")
+            return width, height, x, y
         else:
             print("未能检测到裁剪参数")
             return None
@@ -47,7 +64,7 @@ def crop_video_with_detected_params(video_path, output_path):
     crop_params = detect_crop_parameters(video_path)
     if crop_params:
         width, height, x, y = crop_params
-        print(f"检测到裁剪参数: width={width}, height={height}, x={x}, y={y}")
+        print(f"采用下述裁剪参数: width={width}, height={height}, x={x}, y={y}")
         crop_video(video_path, output_path, width, height, x, y)
         # print the real ratio of the video
         width, height = get_video_info(output_path)
