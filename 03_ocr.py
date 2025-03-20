@@ -1,6 +1,7 @@
 import os
 import argparse
 from paddleocr import PaddleOCR
+import Levenshtein
 
 def load_ass_file(ass_path):
     with open(ass_path, 'r', encoding='utf-8') as f:
@@ -26,24 +27,37 @@ def extract_text_from_image(image_path, ocr, seq):
         return text
 
     result = ocr.ocr(image_path, cls=True)
-    
+
     if not result:
         print(f"[LOG] Subtitle {seq}: No text detected")
         return f"{seq}-未知："
 
     extracted_lines = [word_info[1][0] for line in result for word_info in line]
-
     if not extracted_lines:
         return f"{seq}-未知："
 
-    speaker = extracted_lines[0]
-    speaker = name_mapping.get(speaker, speaker)
-    content = "" if len(extracted_lines) == 1 else " ".join(extracted_lines[1:])
-    content = replace_names_in_text(content, name_mapping)
+    potential_speaker = extracted_lines[0]
+    if potential_speaker in name_mapping:
+        speaker = name_mapping[potential_speaker]
+        content = " ".join(extracted_lines[1:]) if len(extracted_lines) > 1 else ""
+        content = replace_names_in_text(content, name_mapping)
+        formatted_text = f"{seq}-{speaker}：{content}"
+    else:
+        formatted_text = f"{seq}：{' '.join(extracted_lines)}"
 
-    formatted_text = f"{seq}-{speaker}：{content}"
-    
-    print(f"[LOG] Subtitle {seq}: Extracted Text -> {formatted_text}")
+    # Perform secondary single-line OCR for additional accuracy
+    second_result = ocr.ocr(image_path, cls=False)
+    secondary_lines = [word_info[1][0] for line in second_result for word_info in line]
+
+    if secondary_lines:
+        combined_text = " ".join(secondary_lines)
+        
+        # If secondary OCR extracts more words, merge results using string similarity
+        if len(combined_text) > len(" ".join(extracted_lines)):
+            if Levenshtein.ratio(combined_text, " ".join(extracted_lines)) < 0.85:
+                formatted_text = f"{seq}：{combined_text}"
+
+    print(f"[LOG] Subtitle {seq}: Final Extracted Text -> {formatted_text}")
     
     return formatted_text
 

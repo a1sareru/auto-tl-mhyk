@@ -1,3 +1,4 @@
 ffmpeg-python
 paddlepaddle
 paddleocr
+Levenshtein
