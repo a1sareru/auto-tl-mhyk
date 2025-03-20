@@ -91,18 +91,18 @@ def extract_frames(video_path, output_dir, debug, slides):
         
         if similarity > 0.86:
             if active_interval is None:
-                active_interval = [None, None]  # 开始时间稍后填充
-            active_interval[1] = time_stamp  # 结束时间更新
+                active_interval = [None, None]  # start_time will be filled later
+            active_interval[1] = time_stamp  # update end_time
         
         if active_interval is not None and similarity < 0.9:
             if not high_similarity_intervals or (time_stamp - high_similarity_intervals[-1][1] > 1.0):
                 if high_similarity_intervals:
-                    active_interval[0] = high_similarity_intervals[-1][1] + 0.1  # 上一个字幕的结束时间 + 0.1s
+                    active_interval[0] = high_similarity_intervals[-1][1] + 0.1  # wait for 0.1s before next subtitle
                 else:
-                    active_interval[0] = 0.0  # 第一段字幕从0开始
+                    active_interval[0] = 0.0  # 1st subtitle starts from 0.0s
                 high_similarity_intervals.append(active_interval)
             else:
-                high_similarity_intervals[-1][1] = time_stamp  # 合并相邻的毛刺段
+                high_similarity_intervals[-1][1] = time_stamp  # merge with previous interval
             active_interval = None
         
         frame_count += 1
