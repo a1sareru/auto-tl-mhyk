@@ -136,7 +136,7 @@ def extract_frames(video_path, output_dir, debug, slides):
         for start_time, end_time in high_similarity_intervals:
             start_str = f"0:{int(start_time / 60):02}:{start_time % 60:.2f}".replace('.',',')
             end_str = f"0:{int(end_time / 60):02}:{end_time % 60:.2f}".replace('.',',')
-            sub_file.write(f"Dialogue: 0,{start_str},{end_str},Default,,0,0,0,,{seq}\n")
+            sub_file.write(f"Dialogue: 0,{start_str},{end_str},Default,,0,0,0,,{seq:04d}\n")
             seq += 1
     
     if slides:
@@ -154,7 +154,7 @@ def extract_frames(video_path, output_dir, debug, slides):
                 x1_s, y1_s = int(80 * scale_x), int(1290 * scale_y)
                 x2_s, y2_s = int(945 * scale_x), int(1610 * scale_y)
                 slide_frame = frame[y1_s:y2_s, x1_s:x2_s]
-                slide_path = os.path.join(slides_dir, f"{seq:06d}.png")
+                slide_path = os.path.join(slides_dir, f"{seq:04d}.png")
                 cv2.imwrite(slide_path, slide_frame)
             cap.release()
     
