@@ -11,10 +11,26 @@ def save_ass_file(ass_path, lines):
     with open(ass_path, 'w', encoding='utf-8') as f:
         f.writelines(lines)
 
-def extract_text_from_image(image_path, ocr):
-    result = ocr.ocr(image_path, det=False, cls=False)
-    extracted_text = " ".join([line[0] for res in result for line in res]) if result else ""
-    return extracted_text
+def extract_text_from_image(image_path, ocr, seq):
+    result = ocr.ocr(image_path, cls=True)
+    
+    if not result:
+        print(f"[LOG] Subtitle {seq}: No text detected")
+        return f"{seq}-未知："
+
+    extracted_lines = [word_info[1][0] for line in result for word_info in line]
+
+    if not extracted_lines:
+        return f"{seq}-未知："
+
+    speaker = extracted_lines[0]
+    content = "" if len(extracted_lines) == 1 else " ".join(extracted_lines[1:])
+
+    formatted_text = f"{seq}-{speaker}：{content}"
+    
+    print(f"[LOG] Subtitle {seq}: Extracted Text -> {formatted_text}")
+    
+    return formatted_text
 
 def process_ass_file(ass_lines, slides_path, ocr):
     processed_lines = []
@@ -27,8 +43,8 @@ def process_ass_file(ass_lines, slides_path, ocr):
             image_path = os.path.join(slides_path, image_filename)
             
             if os.path.exists(image_path):
-                extracted_text = extract_text_from_image(image_path, ocr)
-                parts[-1] = f"{seq}-{extracted_text}"
+                extracted_text = extract_text_from_image(image_path, ocr, seq)
+                parts[-1] = extracted_text
             
             processed_line = ",".join(parts) + "\n"
             processed_lines.append(processed_line)
@@ -44,7 +60,7 @@ def main():
 
     args = parser.parse_args()
 
-    ocr = PaddleOCR(lang='japan')
+    ocr = PaddleOCR(use_angle_cls=True, lang='japan')
 
     ass_lines = load_ass_file(args.ass_path)
     processed_lines = process_ass_file(ass_lines, args.slides_path, ocr)
