@@ -127,8 +127,12 @@ def main():
 
     data = process_images_to_csv(args.slides_path, ocr, args.chn)
 
-    csv_path = os.path.join(os.path.dirname(
-        args.slides_path), "_ocr_results.csv")
+    slides_folder_name = os.path.basename(os.path.normpath(args.slides_path))
+    csv_filename = f"{slides_folder_name.replace('-slides', '')}-ocr-results.csv" if '-slides' in slides_folder_name else "-ocr-results.csv"
+    csv_path = os.path.join(os.path.dirname(args.slides_path), csv_filename)
+    if os.path.exists(csv_path):
+        print(f"[WARNING] File {csv_filename} already exists and will be overwritten.")
+    
     df = pd.DataFrame(data)
     df.to_csv(csv_path, index=False)
 
