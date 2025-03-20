@@ -31,7 +31,7 @@ python generate_long_pics.py --slides <图片文件夹路径> [--size 4] [--pdf]
   ```
 - 输出的长图文件存放在 `slides-long/` 目录，PDF 文件名为 `slides-long.pdf`。
 - 默认每 4 张图片拼接为一张长图，可通过 `--size` 参数修改。
-- 若 `--pdf` 选项启用，则会按照 A4 纸张尺寸调整 PDF 页面比例。
+- 若 `--pdf` 选项启用，则会将长图合并为单一 PDF 文件
 
 ## `test_paddle.py`
 

@@ -43,22 +43,17 @@ def create_long_images(images, slides_long_path, size=4):
     return long_images
 
 def create_pdf(long_images, output_pdf):
-    """ 将生成的长图合并为 PDF """
-    pdf = FPDF()
+    """ 将生成的长图合并为 PDF，并确保页面尺寸匹配图片实际尺寸 """
+    pdf = FPDF(unit="pt")  # 设定单位为点 (pt)，避免单位转换误差
+
     for img_path in long_images:
         img = Image.open(img_path)
         width, height = img.size
-        aspect_ratio = width / height
-        pdf_width = 210  # A4 纸张宽度 (mm)
-        pdf_height = pdf_width / aspect_ratio
 
-        # 如果计算出的高度超出页面大小，则按比例缩小
-        if pdf_height > 297:  # A4 纸张高度 (mm)
-            pdf_height = 297
-            pdf_width = pdf_height * aspect_ratio
-
+        # 设置自定义页面大小
         pdf.add_page()
-        pdf.image(img_path, 0, 0, pdf_width, pdf_height)
+        pdf.set_auto_page_break(auto=False)  # 禁止自动分页
+        pdf.image(img_path, 0, 0, width, height)
 
     pdf.output(output_pdf, "F")
 
