@@ -60,7 +60,12 @@ def main():
 
     args = parser.parse_args()
 
-    ocr = PaddleOCR(use_angle_cls=True, lang='japan')
+    ocr = PaddleOCR(
+        use_angle_cls=True,  # Keep angle classification for rotated text
+        lang='japan', 
+        drop_score=0.8,  # Filter low-confidence recognition results
+        use_dilation=True  # Enhance character edges to improve recognition
+    )
 
     ass_lines = load_ass_file(args.ass_path)
     processed_lines = process_ass_file(ass_lines, args.slides_path, ocr)
