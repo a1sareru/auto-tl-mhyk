@@ -7,6 +7,20 @@ import csv
 import ffmpeg
 import re
 
+# Customizable parameters
+DEFAULT_WIDTH = 1080
+DEFAULT_HEIGHT = 1920
+
+CROP_X1_RATIO = 942 / DEFAULT_WIDTH
+CROP_Y1_RATIO = 1554 / DEFAULT_HEIGHT
+CROP_X2_RATIO = 1015 / DEFAULT_WIDTH
+CROP_Y2_RATIO = 1634 / DEFAULT_HEIGHT
+
+SLIDE_X1_RATIO = 80 / DEFAULT_WIDTH
+SLIDE_Y1_RATIO = 1290 / DEFAULT_HEIGHT
+SLIDE_X2_RATIO = 945 / DEFAULT_WIDTH
+SLIDE_Y2_RATIO = 1610 / DEFAULT_HEIGHT
+
 def parse_args():
     parser = argparse.ArgumentParser(description="Extract frames from video, apply sharpening, binarization, compute similarity with reference image, and generate subtitles.")
     parser.add_argument("--input", type=str, required=True, help="Path to the input video file.")
@@ -78,11 +92,11 @@ def extract_frames(video_path, debug, slides):
     
     reference_image = cv2.imread(reference_path, cv2.IMREAD_GRAYSCALE)
     
-    scale_x = frame_width / 1080
-    scale_y = frame_height / 1920
+    scale_x = frame_width / DEFAULT_WIDTH
+    scale_y = frame_height / DEFAULT_HEIGHT
     
-    x1, y1 = int(942 * scale_x), int(1554 * scale_y)
-    x2, y2 = int(1015 * scale_x), int(1634 * scale_y)
+    x1, y1 = int(CROP_X1_RATIO * frame_width), int(CROP_Y1_RATIO * frame_height)
+    x2, y2 = int(CROP_X2_RATIO * frame_width), int(CROP_Y2_RATIO * frame_height)
     
     frame_count = 0
     similarities = []
@@ -168,8 +182,8 @@ def extract_frames(video_path, debug, slides):
             cap.set(cv2.CAP_PROP_POS_FRAMES, frame_target)
             ret, frame = cap.read()
             if ret:
-                x1_s, y1_s = int(80 * scale_x), int(1290 * scale_y)
-                x2_s, y2_s = int(945 * scale_x), int(1610 * scale_y)
+                x1_s, y1_s = int(SLIDE_X1_RATIO * frame_width), int(SLIDE_Y1_RATIO * frame_height)
+                x2_s, y2_s = int(SLIDE_X2_RATIO * frame_width), int(SLIDE_Y2_RATIO * frame_height)
                 slide_frame = frame[y1_s:y2_s, x1_s:x2_s]
                 slide_path = os.path.join(slides_dir, f"{seq:04d}.png")
                 cv2.imwrite(slide_path, slide_frame)
