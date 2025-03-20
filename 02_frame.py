@@ -140,7 +140,7 @@ def extract_frames(video_path, debug, slides):
             seq += 1
     
     if slides:
-        slides_dir = os.path.join(video_dir, "slides")
+        slides_dir = os.path.join(video_dir, f"{video_name}-slides")
         if os.path.exists(slides_dir):
             shutil.rmtree(slides_dir)
         os.makedirs(slides_dir, exist_ok=True)
