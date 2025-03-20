@@ -22,7 +22,7 @@ def extract_text_from_image(image_path, ocr, seq):
 
     result = ocr.ocr(image_path, cls=True)
 
-    if not result:
+    if not result or result == [None]:
         print(f"[LOG] Subtitle {seq}: No text detected")
         return "", ""
 
