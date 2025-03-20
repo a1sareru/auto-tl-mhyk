@@ -161,3 +161,9 @@ python 03_ocr.py --slides-path <slides目录路径> [--chn]
 ```sh
 python 03_ocr.py --slides-path slides/ --chn
 ```
+
+## 闲聊
+
+前面忘了后面忘了，总之展示一下开发者的*打轴*工作区：
+
+![show_my_workspace](assets/show_my_workspace.png)
