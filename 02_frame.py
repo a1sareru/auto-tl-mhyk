@@ -8,7 +8,6 @@ import csv
 def parse_args():
     parser = argparse.ArgumentParser(description="Extract frames from video, apply sharpening, binarization, compute similarity with reference image, and generate subtitles.")
     parser.add_argument("--input", type=str, required=True, help="Path to the input video file.")
-    parser.add_argument("--output", type=str, default="tmp-frame", help="Output directory for similarity results.")
     parser.add_argument("--debug", action="store_true", help="Enable debug mode to save tmp_frame images.")
     parser.add_argument("--slides", action="store_true", help="Enable slides generation for high similarity intervals.")
     return parser.parse_args()
@@ -33,7 +32,8 @@ def compute_similarity(image1, image2):
     similarity = 1 - (np.sum(diff) / (255 * image1.shape[0] * image1.shape[1]))
     return similarity
 
-def extract_frames(video_path, output_dir, debug, slides):
+def extract_frames(video_path, debug, slides):
+    output_dir = "tmp-frame"
     if debug:
         if os.path.exists(output_dir):
             shutil.rmtree(output_dir)
@@ -164,4 +164,4 @@ def extract_frames(video_path, output_dir, debug, slides):
 
 if __name__ == "__main__":
     args = parse_args()
-    extract_frames(args.input, args.output, args.debug, args.slides)
+    extract_frames(args.input, args.debug, args.slides)

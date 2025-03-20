@@ -3,7 +3,6 @@ import argparse
 from paddleocr import PaddleOCR
 import Levenshtein
 import pandas as pd
-from transformers import MBartForConditionalGeneration, MBart50TokenizerFast
 from translate import Translator
 
 
@@ -60,7 +59,7 @@ def extract_text_from_image(image_path, ocr, seq):
     return formatted_text, potential_speaker
 
 
-def process_images_to_csv(slides_path, ocr, tokenizer, model, translate_to_chn):
+def process_images_to_csv(slides_path, ocr, translate_to_chn):
     data = []
     for seq in range(1, 10000):  # Assuming a range for seq
         image_filename = f"{seq:04d}.png"
@@ -81,7 +80,7 @@ def process_images_to_csv(slides_path, ocr, tokenizer, model, translate_to_chn):
             # Translate to Chinese only if enabled
             if translate_to_chn:
                 translated_text = translate_japanese_to_chinese(
-                    extracted_text, tokenizer, model)
+                    extracted_text)
                 row["translated_chinese"] = translated_text
 
             data.append(row)
@@ -89,7 +88,7 @@ def process_images_to_csv(slides_path, ocr, tokenizer, model, translate_to_chn):
     return data
 
 
-def translate_japanese_to_chinese(japanese_text, tokenizer, model):
+def translate_japanese_to_chinese(japanese_text):
     # print original extracted Japanese text
     print(f"[LOG] Original Extracted Japanese: {japanese_text}")
 
@@ -126,13 +125,7 @@ def main():
         use_dilation=True  # Enhance character edges to improve recognition
     )
 
-    tokenizer = MBart50TokenizerFast.from_pretrained(
-        "facebook/mbart-large-50-many-to-many-mmt", src_lang="ja_XX", tgt_lang="zh_CN")
-    model = MBartForConditionalGeneration.from_pretrained(
-        "facebook/mbart-large-50-many-to-many-mmt")
-
-    data = process_images_to_csv(
-        args.slides_path, ocr, tokenizer, model, args.chn)
+    data = process_images_to_csv(args.slides_path, ocr, args.chn)
 
     csv_path = os.path.join(os.path.dirname(
         args.slides_path), "_ocr_results.csv")

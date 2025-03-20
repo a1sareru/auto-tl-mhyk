@@ -1,4 +1,7 @@
 ffmpeg-python
-paddlepaddle
+opencv-python
+numpy
 paddleocr
 Levenshtein
+pandas
+translate
