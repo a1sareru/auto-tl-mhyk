@@ -12,6 +12,19 @@ def save_ass_file(ass_path, lines):
         f.writelines(lines)
 
 def extract_text_from_image(image_path, ocr, seq):
+    name_mapping = {
+        "オズ": "Oz", "アーサー": "Arthur", "カイン": "Cain", "リケ": "Riquet", "スノウ": "Snow",
+        "ホワイト": "White", "ミスラ": "Mithra", "オーエン": "Owen", "ブラッドリー": "Bradley",
+        "ファウスト": "Faust", "シノ": "Shino", "ヒースクリフ": "Heathcliff", "ネロ": "Nero",
+        "シャイロック": "Shylock", "ムル": "Murr", "クロエ": "Chloe", "ラスティカ": "Rustica",
+        "フィガロ": "Figaro", "ルチル": "Rutile", "レノックス": "Lennox", "ミチル": "Mitile"
+    }
+    
+    def replace_names_in_text(text, mapping):
+        for jp_name, en_name in mapping.items():
+            text = text.replace(jp_name, en_name)
+        return text
+
     result = ocr.ocr(image_path, cls=True)
     
     if not result:
@@ -24,7 +37,9 @@ def extract_text_from_image(image_path, ocr, seq):
         return f"{seq}-未知："
 
     speaker = extracted_lines[0]
+    speaker = name_mapping.get(speaker, speaker)
     content = "" if len(extracted_lines) == 1 else " ".join(extracted_lines[1:])
+    content = replace_names_in_text(content, name_mapping)
 
     formatted_text = f"{seq}-{speaker}：{content}"
     
