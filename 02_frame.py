@@ -162,14 +162,30 @@ def extract_frames(video_path, debug, slides):
     # Pair peak intervals
     high_similarity_intervals = []
     i = 0
-    while i < len(peak_intervals_sec) - 1:
-        start1, end1 = peak_intervals_sec[i]
-        start2, end2 = peak_intervals_sec[i + 1]
-        if start2 - end1 <= 1.0:  # max allowed gap between peaks
-            high_similarity_intervals.append((start1, end2))
-            i += 2  # skip the next one, already paired
-        else:
-            i += 1
+    while i < len(peak_intervals_sec):
+        if i + 1 < len(peak_intervals_sec):
+            start1, end1 = peak_intervals_sec[i]
+            start2, end2 = peak_intervals_sec[i + 1]
+            if start2 - end1 <= 1.0:  # max allowed gap between peaks
+                high_similarity_intervals.append((start1, end2))
+                i += 2
+                continue
+
+        # !The remaining lines in the while-loop is for handling edge cases
+        # !Not thoroughly tested since it hardly occurs
+        
+        # Check if current peak is isolated
+        prev_gap = float('inf') if i == 0 else peak_intervals_sec[i][0] - peak_intervals_sec[i - 1][1]
+        next_gap = float('inf') if i == len(peak_intervals_sec) - 1 else peak_intervals_sec[i + 1][0] - peak_intervals_sec[i][1]
+        
+        if prev_gap > 2.0 and next_gap > 2.0:
+            start, end = peak_intervals_sec[i]
+            high_similarity_intervals.append((start, end))  # Treat as self-contained interval
+            print(f"unpaired peak at {start:.2f} - {end:.2f} was treated as a self-contained interval")
+        elif (prev_gap > 2.0 or next_gap > 2.0) and prev_gap > 1.0 and next_gap > 1.0:
+            start, end = peak_intervals_sec[i]
+            print(f"unpaired peak after seq{i} at {start:.2f} - {end:.2f} was skipped for it is not isolated")
+        i += 1
 
     if debug:
         csv_path = os.path.join(output_dir, "_a.csv")
