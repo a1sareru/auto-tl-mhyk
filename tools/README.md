@@ -4,6 +4,41 @@
 
 这份说明是为了避免开发者自己忘了怎么用而写的，请不要太在意这个目录下的所有内容。
 
+## `merge_srt.py`
+
+该脚本用于将多个视频对应的字幕文件（SRT）合并为一个整体字幕文件，并自动调整时间轴以保证连续播放时字幕正确对应。
+
+### 用法
+
+```sh
+python merge_srt.py [-yrb <路径前缀>]
+```
+
+**参数说明**
+- `-yrb` 或 `--yml-relative-base`：可选参数，指定 `merge.yaml` 中路径的相对基准目录。若未指定，则以脚本所在目录为基准。
+
+### 功能说明
+1. 读取脚本同级目录下的 `merge_srt.yml` 文件，获取视频文件路径和对应的字幕文件路径。
+2. 遍历所有字幕文件，根据每个视频的时长自动偏移字幕时间轴，使其适配拼接后的视频。
+3. 合并所有字幕为一个新的 `merged.srt` 文件，保证编号连续、时间轴准确。
+4. 输出合并结果路径，并打印每个视频的编码信息（包括视频与音频编码、分辨率、帧率、采样率等）。
+
+### 注意事项
+- 依赖：
+  ```sh
+  pip install moviepy ffmpeg-python pyyaml
+  ```
+- `merge.yaml` 文件必须为如下格式，包含 `video_paths` 与 `srt_paths` 两个字段，且数量一致：
+  ```yaml
+  - video_paths:
+      - path/to/video1.mp4
+      - path/to/video2.mp4
+  - srt_paths:
+      - path/to/sub1.srt
+      - path/to/sub2.srt
+  ```
+- 合并后的字幕输出为 `merged.srt`，位于当前工作目录或 `-yrb` 指定的目录下。
+
 ## `generate_long_pics.py`
 
 该脚本用于将多个图片合并成长图，并可选地生成 PDF 文件。适用于将 `slides` 目录下的图片内容拼接成长条形图像，方便阅读或归档。
@@ -31,7 +66,7 @@ python generate_long_pics.py --slides <图片文件夹路径> [--size 4] [--pdf]
   ```
 - 输出的长图文件存放在 `slides-long/` 目录，PDF 文件名为 `slides-long.pdf`。
 - 默认每 4 张图片拼接为一张长图，可通过 `--size` 参数修改。
-- 若 `--pdf` 选项启用，则会将长图合并为单一 PDF 文件
+- 若 `--pdf` 选项启用，则会将长图合并为单一 PDF 文件。
 
 ## `test_paddle.py`
 
