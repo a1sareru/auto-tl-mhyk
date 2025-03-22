@@ -183,14 +183,18 @@ def extract_frames(video_path, debug, slides):
     subtitle_path = os.path.join(video_dir, f"{video_name}.srt")
     with open(subtitle_path, "w") as sub_file:
         seq = 1
-        for start_time, end_time in high_similarity_intervals:
-            start_str = f"{int(start_time // 3600):02}:{int((start_time % 3600) // 60):02}:{int(start_time % 60):02},{int((start_time % 1) * 1000):03}"
-            end_str = f"{int(end_time // 3600):02}:{int((end_time % 3600) // 60):02}:{int(end_time % 60):02},{int((end_time % 1) * 1000):03}"
-            
+        prev_end = 0.0
+        for i, interval in enumerate(high_similarity_intervals):
+            curr_start = interval[0]
+
+            start_str = f"{int(prev_end // 3600):02}:{int((prev_end % 3600) // 60):02}:{int(prev_end % 60):02},{int((prev_end % 1) * 1000):03}"
+            end_str = f"{int(curr_start // 3600):02}:{int((curr_start % 3600) // 60):02}:{int(curr_start % 60):02},{int((curr_start % 1) * 1000):03}"
+
             sub_file.write(f"{seq}\n")
             sub_file.write(f"{start_str} --> {end_str}\n")
             sub_file.write(f"{seq:04d}\n\n")
-            
+
+            prev_end = interval[1]
             seq += 1
     
     if slides:
