@@ -110,7 +110,9 @@ def translate_japanese_to_chinese(japanese_text):
 
 def main():
     parser = argparse.ArgumentParser(
-        description="Process images to extract OCR results and save as CSV.")
+        description="Process images to extract OCR results and save as CSV.",
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter
+    )
     parser.add_argument("--slides-path", required=True,
                         help="Path to the slides folder containing PNG images.")
     parser.add_argument("--chn", action="store_true",
