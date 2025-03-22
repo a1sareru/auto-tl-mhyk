@@ -184,17 +184,17 @@ def extract_frames(video_path, debug, slides):
     with open(subtitle_path, "w") as sub_file:
         seq = 1
         prev_end = 0.0
-        for i, interval in enumerate(high_similarity_intervals):
-            curr_start = interval[0]
+        for interval in high_similarity_intervals:
+            curr_end = interval[1]
 
             start_str = f"{int(prev_end // 3600):02}:{int((prev_end % 3600) // 60):02}:{int(prev_end % 60):02},{int((prev_end % 1) * 1000):03}"
-            end_str = f"{int(curr_start // 3600):02}:{int((curr_start % 3600) // 60):02}:{int(curr_start % 60):02},{int((curr_start % 1) * 1000):03}"
+            end_str = f"{int(curr_end // 3600):02}:{int((curr_end % 3600) // 60):02}:{int(curr_end % 60):02},{int((curr_end % 1) * 1000):03}"
 
             sub_file.write(f"{seq}\n")
             sub_file.write(f"{start_str} --> {end_str}\n")
             sub_file.write(f"{seq:04d}\n\n")
 
-            prev_end = interval[1]
+            prev_end = curr_end
             seq += 1
     
     if slides:
@@ -204,7 +204,7 @@ def extract_frames(video_path, debug, slides):
         os.makedirs(slides_dir, exist_ok=True)
 
         for seq, (start_time, end_time) in enumerate(high_similarity_intervals, start=1):
-            frame_target = int(end_time * fps) - 2
+            frame_target = int(start_time * fps) + 2
             cap = cv2.VideoCapture(video_path)
             cap.set(cv2.CAP_PROP_POS_FRAMES, frame_target)
             ret, frame = cap.read()
