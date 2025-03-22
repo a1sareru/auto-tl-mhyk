@@ -8,7 +8,7 @@ import ffmpeg
 import re
 import yaml
 
-def load_config(config_path="config.yaml"):
+def load_config(config_path="config.yml"):
     if not os.path.exists(config_path):
         raise FileNotFoundError(f"Config file '{config_path}' not found.")
     
@@ -55,7 +55,7 @@ def get_video_resolution(video_path):
     return None, None
 
 def extract_frames(video_path, debug, slides):
-    config_path = os.path.join(os.path.dirname(__file__), "config.yaml")
+    config_path = os.path.join(os.path.dirname(__file__), "config.yml")
     config = load_config(config_path)
 
     DEFAULT_WIDTH = config["DEFAULT_WIDTH"]
