@@ -130,26 +130,47 @@ def extract_frames(video_path, debug, slides):
         similarity = compute_similarity(binary_frame, reference_image)
         similarities.append([frame_count, similarity])
         
-        if similarity > 0.86:
-            if active_interval is None:
-                active_interval = [None, None]  # start_time will be filled later
-            active_interval[1] = time_stamp  # update end_time
-        
-        if active_interval is not None and similarity < 0.9:
-            if not high_similarity_intervals or (time_stamp - high_similarity_intervals[-1][1] > 1.0):
-                if high_similarity_intervals:
-                    active_interval[0] = high_similarity_intervals[-1][1] + 0.1  # wait for 0.1s before next subtitle
-                else:
-                    active_interval[0] = 0.0  # 1st subtitle starts from 0.0s
-                high_similarity_intervals.append(active_interval)
-            else:
-                high_similarity_intervals[-1][1] = time_stamp  # merge with previous interval
-            active_interval = None
         
         frame_count += 1
     
     cap.release()
-    
+
+    # Determine dynamic threshold
+    similarity_values = [sim for _, sim in similarities]
+    max_sim = max(similarity_values)
+    peak_threshold = max_sim * 0.97
+
+    # Identify peak intervals
+    peak_intervals = []
+    start_frame = None
+    for frame_num, sim in similarities:
+        if sim >= peak_threshold:
+            if start_frame is None:
+                start_frame = frame_num
+        else:
+            if start_frame is not None:
+                end_frame = frame_num - 1
+                peak_intervals.append((start_frame, end_frame))
+                start_frame = None
+    if start_frame is not None:
+        peak_intervals.append((start_frame, frame_count - 1))
+
+    # Convert frame numbers to time
+    fps = cap.get(cv2.CAP_PROP_FPS) if cap.isOpened() else fps
+    peak_intervals_sec = [(start / fps, end / fps) for start, end in peak_intervals]
+
+    # Pair peak intervals
+    high_similarity_intervals = []
+    i = 0
+    while i < len(peak_intervals_sec) - 1:
+        start1, end1 = peak_intervals_sec[i]
+        start2, end2 = peak_intervals_sec[i + 1]
+        if start2 - end1 <= 1.0:  # max allowed gap between peaks
+            high_similarity_intervals.append((start1, end2))
+            i += 2  # skip the next one, already paired
+        else:
+            i += 1
+
     if debug:
         csv_path = os.path.join(output_dir, "_a.csv")
         with open(csv_path, mode="w", newline="") as csv_file:
