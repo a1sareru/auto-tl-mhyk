@@ -42,18 +42,23 @@ def create_long_images(images, slides_long_path, size=4):
 
     return long_images
 
-def create_pdf(long_images, output_pdf):
-    """ 将生成的长图合并为 PDF，并确保页面尺寸匹配图片实际尺寸 """
-    pdf = FPDF(unit="pt")  # 设定单位为点 (pt)，避免单位转换误差
+def create_pdf(images, output_pdf, size=4):
+    """ 将原始图片分组拼接并合并为 PDF，每页 size 张图片，页面尺寸恰好匹配 """
+    if not images:
+        return
 
-    for img_path in long_images:
-        img = Image.open(img_path)
-        width, height = img.size
+    img_sample = Image.open(images[0])
+    img_width, img_height = img_sample.size
 
-        # 设置自定义页面大小
+    pdf = FPDF(unit="pt", format=(img_width, img_height * size))
+    pdf.set_auto_page_break(auto=False)
+
+    for i in range(0, len(images), size):
+        group = images[i:i+size]
         pdf.add_page()
-        pdf.set_auto_page_break(auto=False)  # 禁止自动分页
-        pdf.image(img_path, 0, 0, width, height)
+
+        for j, img_path in enumerate(group):
+            pdf.image(img_path, 0, j * img_height, img_width, img_height)
 
     pdf.output(output_pdf, "F")
 
@@ -77,7 +82,7 @@ def main():
 
     if args.pdf:
         output_pdf = os.path.join(os.path.dirname(slides_path), "slides-long.pdf")
-        create_pdf(long_images, output_pdf)
+        create_pdf(images, output_pdf, args.size)
         print(f"PDF 生成完成: {output_pdf}")
 
 if __name__ == "__main__":
