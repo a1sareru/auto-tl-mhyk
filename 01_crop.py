@@ -124,7 +124,7 @@ def main():
     width, height = get_video_info(video_path)
     current_aspect = width / height
     
-    print(f"当前目标模式: {args.mode}, 目标比例: {target_aspect:.2f}")
+    print(f"当前目标模式: {args.mode}, 目标比例: {'9:16' if args.mode == '9_16' else '9:19.5'}")
     
     if current_aspect > target_aspect:
         # 视频比目标比例更宽，裁剪左右
