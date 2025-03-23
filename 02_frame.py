@@ -8,6 +8,15 @@ import ffmpeg
 import re
 import yaml
 
+# === User's Configuration ===
+# Path to the reference image (can be modified as needed)
+# 参考图像路径（可按需修改）
+KUROYURI_PATH = "kuroyuri.png"
+
+# Similarity threshold ratio for detecting frame peaks (default: 0.97)
+# 相似度阈值，用于识别高峰帧区间（默认值：0.97）
+THRESHOLD_RATIO = 0.97
+
 # Configuration Presets
 
 CONFIG_PRESETS = {
@@ -38,12 +47,6 @@ CONFIG_PRESETS = {
     }
 }
 
-def load_config(config_path="config.yml"):
-    if not os.path.exists(config_path):
-        raise FileNotFoundError(f"Config file '{config_path}' not found.")
-    
-    with open(config_path, "r") as file:
-        return yaml.safe_load(file)
 
 def parse_args():
     parser = argparse.ArgumentParser(description="Extract frames from video, apply sharpening, binarization, compute similarity with reference image, and generate subtitles.")
@@ -91,10 +94,7 @@ def get_video_resolution(video_path):
     return None, None
 
 def extract_frames(video_path, debug, slides):
-    config_path = os.path.join(os.path.dirname(__file__), "config.yml")
-    config = load_config(config_path)
-    
-    THRESHOLD_RATIO = config.get("THRESHOLD_RATIO", 0.97)
+    # Configuration loading removed; using manual constants
 
     output_dir = "tmp-frame"
     if debug:
@@ -121,7 +121,7 @@ def extract_frames(video_path, debug, slides):
         return
     preset = CONFIG_PRESETS[preset_key]
     
-    reference_path = os.path.abspath(config.get("KUROYURI_PATH", ""))
+    reference_path = os.path.abspath(KUROYURI_PATH)
     print(f"Using reference image at: {reference_path}")
     if not os.path.exists(reference_path):
         print(f"Error: Reference image not found at: {reference_path}")
