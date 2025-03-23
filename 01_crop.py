@@ -13,7 +13,7 @@ def get_video_info(video_path):
     return width, height
 
 
-def detect_crop_parameters(video_path):
+def detect_crop_parameters(video_path, target_aspect):
     """使用 ffmpeg 运行 cropdetect 过滤器，仅分析视频的中间1/3，提取出现次数最多的裁剪参数"""
     try:
         # 获取视频时长
@@ -45,11 +45,11 @@ def detect_crop_parameters(video_path):
             if x > 0:
                 width = width + 2 * x
                 x = 0
-            # turn weight: height into 9:16
-            if width * 16 < height * 9:
-                height = width * 16 // 9
+            # turn weight: height into target aspect ratio
+            if width * target_aspect < height:
+                height = int(width / target_aspect)
             
-            print(f"转换为9:16比例: width={width}, height={height}, x={x}, y={y}")
+            print(f"转换为{target_aspect * 16}:9比例: width={width}, height={height}, x={x}, y={y}")
             return width, height, x, y
         else:
             print("未能检测到裁剪参数")
@@ -59,9 +59,9 @@ def detect_crop_parameters(video_path):
         return None
 
 
-def crop_video_with_detected_params(video_path, output_path):
+def crop_video_with_detected_params(video_path, output_path, target_aspect):
     """自动检测并裁剪视频"""
-    crop_params = detect_crop_parameters(video_path)
+    crop_params = detect_crop_parameters(video_path, target_aspect)
     if crop_params:
         width, height, x, y = crop_params
         print(f"采用下述裁剪参数: width={width}, height={height}, x={x}, y={y}")
@@ -104,26 +104,39 @@ def main():
     parser = argparse.ArgumentParser(description="裁剪视频以适应9:16比例。")
     parser.add_argument("-i", "--input", help="输入视频文件路径")
     parser.add_argument("-o", "--output", help="输出视频文件路径，可选")
+    parser.add_argument("--mode", default="9_16", help="目标比例模式，可选: 9_16 或 9_19.5")
     args = parser.parse_args()
+    
+    TARGET_ASPECT_RATIOS = {
+        "9_16": 9 / 16,
+        "9_19.5": 9 / 19.5
+    }
+
+    if args.mode not in TARGET_ASPECT_RATIOS:
+        print(f"不支持的模式: {args.mode}，请选择 '9_16' 或 '9_19.5'")
+        return
+
+    target_aspect = TARGET_ASPECT_RATIOS[args.mode]
     
     video_path = args.input
     output_path = generate_output_path(video_path, args.output)
-    target_aspect = 9 / 16
     
     width, height = get_video_info(video_path)
     current_aspect = width / height
     
+    print(f"当前目标模式: {args.mode}, 目标比例: {target_aspect:.2f}")
+    
     if current_aspect > target_aspect:
-        # 视频比9:16更宽，裁剪左右
+        # 视频比目标比例更宽，裁剪左右
         new_width = int(height * target_aspect)
         x_offset = (width - new_width) // 2
         crop_video(video_path, output_path, new_width, height, x_offset, 0)
     elif current_aspect < target_aspect:
-        # 视频比9:16更长，裁剪上下
-        crop_video_with_detected_params(video_path, output_path)
+        # 视频比目标比例更长，裁剪上下
+        crop_video_with_detected_params(video_path, output_path, target_aspect)
               
     else:
-        print("视频已经是9:16比例，无需裁剪。")
+        print("视频已经是目标比例，无需裁剪。")
 
 
 if __name__ == "__main__":
