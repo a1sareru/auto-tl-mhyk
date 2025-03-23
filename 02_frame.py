@@ -23,7 +23,12 @@ def parse_args():
     return parser.parse_args()
 
 def is_valid_aspect_ratio(width, height):
-    return abs((width / height) - (9 / 16)) < 0.05
+    if abs((width / height) - (9 / 16)) < 0.05:
+        return True
+    # Accept videos whose aspect ratio equals 294:640
+    if abs((width / height) - (294 / 640)) < 0.01:
+        return True
+    return False
 
 def enhance_sharpness(image):
     kernel = np.array([[-1, -1, -1],
