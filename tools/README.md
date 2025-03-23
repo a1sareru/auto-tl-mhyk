@@ -17,6 +17,19 @@ python merge_srt.py [-yrb <路径前缀>]
 **参数说明**
 - `-yrb` 或 `--yml-relative-base`：可选参数，指定 `merge.yaml` 中路径的相对基准目录。若未指定，则以脚本所在目录为基准。
 
+`merge_srt.yml` 文件的示例：
+
+```yaml
+- video_paths:
+  - 01.mp4
+  - 02.mp4
+  - 03.mp4
+- srt_paths:
+  - 01.srt
+  - 02.srt
+  - 03.srt
+```
+
 ### 功能说明
 1. 读取脚本同级目录下的 `merge_srt.yml` 文件，获取视频文件路径和对应的字幕文件路径。
 2. 遍历所有字幕文件，根据每个视频的时长自动偏移字幕时间轴，使其适配拼接后的视频。
