@@ -8,6 +8,36 @@ import ffmpeg
 import re
 import yaml
 
+# Configuration Presets
+
+CONFIG_PRESETS = {
+    "9_16": {
+        "DEFAULT_WIDTH": 1080,
+        "DEFAULT_HEIGHT": 1920,
+        "CROP_X1_RATIO": 0.872,
+        "CROP_Y1_RATIO": 0.809,
+        "CROP_X2_RATIO": 0.94,
+        "CROP_Y2_RATIO": 0.85,
+        "SLIDE_X1_RATIO": 0.074,
+        "SLIDE_Y1_RATIO": 0.672,
+        "SLIDE_X2_RATIO": 0.888,
+        "SLIDE_Y2_RATIO": 0.839
+    },
+    "9_19.5": {
+        # Preset for aspect ratio 9:19.5
+        "DEFAULT_WIDTH": 1080,
+        "DEFAULT_HEIGHT": 2340,
+        "CROP_X1_RATIO": 0.872,
+        "CROP_Y1_RATIO": 0.757,
+        "CROP_X2_RATIO": 0.945,
+        "CROP_Y2_RATIO": 0.794,
+        "SLIDE_X1_RATIO": 0.082,
+        "SLIDE_Y1_RATIO": 0.641,
+        "SLIDE_X2_RATIO": 0.884,
+        "SLIDE_Y2_RATIO": 0.773
+    }
+}
+
 def load_config(config_path="config.yml"):
     if not os.path.exists(config_path):
         raise FileNotFoundError(f"Config file '{config_path}' not found.")
@@ -24,11 +54,12 @@ def parse_args():
 
 def is_valid_aspect_ratio(width, height):
     if abs((width / height) - (9 / 16)) < 0.05:
-        return True
-    # Accept videos whose aspect ratio equals 294:640
-    if abs((width / height) - (294 / 640)) < 0.01:
-        return True
-    return False
+        print("Aspect ratio mode: 9:16")
+        return "9_16"
+    if abs((width / height) - (1080 / 2340)) < 0.01:
+        print("Aspect ratio mode: 9:19.5")
+        return "9_19.5"
+    return None
 
 def enhance_sharpness(image):
     kernel = np.array([[-1, -1, -1],
@@ -65,19 +96,6 @@ def extract_frames(video_path, debug, slides):
     
     THRESHOLD_RATIO = config.get("THRESHOLD_RATIO", 0.97)
 
-    DEFAULT_WIDTH = config["DEFAULT_WIDTH"]
-    DEFAULT_HEIGHT = config["DEFAULT_HEIGHT"]
-
-    CROP_X1_RATIO = config["CROP_X1_RATIO"]
-    CROP_Y1_RATIO = config["CROP_Y1_RATIO"]
-    CROP_X2_RATIO = config["CROP_X2_RATIO"]
-    CROP_Y2_RATIO = config["CROP_Y2_RATIO"]
-
-    SLIDE_X1_RATIO = config["SLIDE_X1_RATIO"]
-    SLIDE_Y1_RATIO = config["SLIDE_Y1_RATIO"]
-    SLIDE_X2_RATIO = config["SLIDE_X2_RATIO"]
-    SLIDE_Y2_RATIO = config["SLIDE_Y2_RATIO"]
-
     output_dir = "tmp-frame"
     if debug:
         if os.path.exists(output_dir):
@@ -96,16 +114,14 @@ def extract_frames(video_path, debug, slides):
         cap.release()
         return
     
-    if not is_valid_aspect_ratio(frame_width, frame_height):
-        print("Error: Video does not have a 9:16 aspect ratio.")
+    preset_key = is_valid_aspect_ratio(frame_width, frame_height)
+    if preset_key is None:
+        print("Error: Unsupported aspect ratio.")
         cap.release()
         return
+    preset = CONFIG_PRESETS[preset_key]
     
-    if "KUROYURI_PATH" not in config:
-        print("Error: 'KUROYURI_PATH' not specified in config.yml. Please provide the path to the reference image.")
-        cap.release()
-        return
-    reference_path = os.path.abspath(config["KUROYURI_PATH"])
+    reference_path = os.path.abspath(config.get("KUROYURI_PATH", ""))
     print(f"Using reference image at: {reference_path}")
     if not os.path.exists(reference_path):
         print(f"Error: Reference image not found at: {reference_path}")
@@ -114,9 +130,19 @@ def extract_frames(video_path, debug, slides):
     
     reference_image = cv2.imread(reference_path, cv2.IMREAD_GRAYSCALE)
     
-    scale_x = frame_width / DEFAULT_WIDTH
-    scale_y = frame_height / DEFAULT_HEIGHT
+    DEFAULT_WIDTH = preset["DEFAULT_WIDTH"]
+    DEFAULT_HEIGHT = preset["DEFAULT_HEIGHT"]
     
+    CROP_X1_RATIO = preset["CROP_X1_RATIO"]
+    CROP_Y1_RATIO = preset["CROP_Y1_RATIO"]
+    CROP_X2_RATIO = preset["CROP_X2_RATIO"]
+    CROP_Y2_RATIO = preset["CROP_Y2_RATIO"]
+
+    SLIDE_X1_RATIO = preset["SLIDE_X1_RATIO"]
+    SLIDE_Y1_RATIO = preset["SLIDE_Y1_RATIO"]
+    SLIDE_X2_RATIO = preset["SLIDE_X2_RATIO"]
+    SLIDE_Y2_RATIO = preset["SLIDE_Y2_RATIO"]
+
     x1, y1 = int(CROP_X1_RATIO * frame_width), int(CROP_Y1_RATIO * frame_height)
     x2, y2 = int(CROP_X2_RATIO * frame_width), int(CROP_Y2_RATIO * frame_height)
     
@@ -141,7 +167,6 @@ def extract_frames(video_path, debug, slides):
         
         similarity = compute_similarity(binary_frame, reference_image)
         similarities.append([frame_count, similarity])
-        
         
         frame_count += 1
     
