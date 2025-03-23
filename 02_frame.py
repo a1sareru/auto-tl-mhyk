@@ -62,6 +62,8 @@ def get_video_resolution(video_path):
 def extract_frames(video_path, debug, slides):
     config_path = os.path.join(os.path.dirname(__file__), "config.yml")
     config = load_config(config_path)
+    
+    THRESHOLD_RATIO = config.get("THRESHOLD_RATIO", 0.97)
 
     DEFAULT_WIDTH = config["DEFAULT_WIDTH"]
     DEFAULT_HEIGHT = config["DEFAULT_HEIGHT"]
@@ -99,9 +101,14 @@ def extract_frames(video_path, debug, slides):
         cap.release()
         return
     
-    reference_path = os.path.join(os.path.dirname(__file__), "kuroyuri.png")
+    if "KUROYURI_PATH" not in config:
+        print("Error: 'KUROYURI_PATH' not specified in config.yml. Please provide the path to the reference image.")
+        cap.release()
+        return
+    reference_path = os.path.abspath(config["KUROYURI_PATH"])
+    print(f"Using reference image at: {reference_path}")
     if not os.path.exists(reference_path):
-        print("Error: Reference image 'kuroyuri.png' not found in script directory.")
+        print(f"Error: Reference image not found at: {reference_path}")
         cap.release()
         return
     
@@ -143,7 +150,7 @@ def extract_frames(video_path, debug, slides):
     # Determine dynamic threshold
     similarity_values = [sim for _, sim in similarities]
     max_sim = max(similarity_values)
-    peak_threshold = max_sim * 0.97
+    peak_threshold = max_sim * THRESHOLD_RATIO
 
     # Identify peak intervals
     peak_intervals = []
