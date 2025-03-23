@@ -95,8 +95,16 @@ def get_video_resolution(video_path):
 
 def extract_frames(video_path, debug, slides):
     # Configuration loading removed; using manual constants
+    # Validate THRESHOLD_RATIO
+    if not isinstance(THRESHOLD_RATIO, (float, int)) or THRESHOLD_RATIO <= 0 or THRESHOLD_RATIO > 1:
+        print(f"Error: Invalid THRESHOLD_RATIO value: {THRESHOLD_RATIO}. It must be a number between 0 and 1.")
+        return
+    if THRESHOLD_RATIO < 0.8:
+        print(f"Warning: THRESHOLD_RATIO={THRESHOLD_RATIO} is very low and may lead to false detections.")
 
-    output_dir = "tmp-frame"
+    video_dir, video_filename = os.path.split(video_path)
+    output_dir = os.path.join(video_dir, "tmp_debug_frame")
+    print(f"Debug frame output directory: {os.path.abspath(output_dir)}")
     if debug:
         if os.path.exists(output_dir):
             shutil.rmtree(output_dir)
