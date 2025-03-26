@@ -258,19 +258,40 @@ def extract_frames(video_path, debug, slides):
             writer.writerows(similarities)
 
     # Insert slide extraction block before subtitle generation
-    # Extract a slide image from each interval and save to slides_dir
-    for seq, (start_time, end_time) in enumerate(high_similarity_intervals, start=1):
+    merged_intervals = []
+    previous_slide = None
+    previous_start, previous_end = None, None
+
+    for interval in high_similarity_intervals:
+        start_time, end_time = interval
         frame_target = int(start_time * fps) + 2
         cap = cv2.VideoCapture(video_path)
         cap.set(cv2.CAP_PROP_POS_FRAMES, frame_target)
         ret, frame = cap.read()
-        if ret:
-            x1_s, y1_s = int(SLIDE_X1_RATIO * frame_width), int(SLIDE_Y1_RATIO * frame_height)
-            x2_s, y2_s = int(SLIDE_X2_RATIO * frame_width), int(SLIDE_Y2_RATIO * frame_height)
-            slide_frame = frame[y1_s:y2_s, x1_s:x2_s]
-            slide_path = os.path.join(slides_dir, f"{seq:04d}.png")
-            cv2.imwrite(slide_path, slide_frame)
         cap.release()
+        if not ret:
+            continue
+
+        x1_s, y1_s = int(SLIDE_X1_RATIO * frame_width), int(SLIDE_Y1_RATIO * frame_height)
+        x2_s, y2_s = int(SLIDE_X2_RATIO * frame_width), int(SLIDE_Y2_RATIO * frame_height)
+        slide_frame = frame[y1_s:y2_s, x1_s:x2_s]
+        current_gray = cv2.cvtColor(slide_frame, cv2.COLOR_BGR2GRAY)
+
+        if previous_slide is not None:
+            sim = compute_similarity(current_gray, previous_slide)
+            if sim >= 0.95:
+                print(f"Merged interval: similarity={sim:.4f}")
+                previous_end = end_time
+                merged_intervals[-1] = (previous_start, previous_end)
+                continue
+
+        slide_path = os.path.join(slides_dir, f"{len(merged_intervals)+1:04d}.png")
+        cv2.imwrite(slide_path, slide_frame)
+        merged_intervals.append((start_time, end_time))
+        previous_slide = current_gray
+        previous_start, previous_end = start_time, end_time
+
+    high_similarity_intervals = merged_intervals
 
     video_dir, video_filename = os.path.split(video_path)
     video_name, _ = os.path.splitext(video_filename)
