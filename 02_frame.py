@@ -118,7 +118,7 @@ def extract_frames(video_path, debug, slides):
     if debug:
         # Setup debug frame output directory if debug mode is enabled
         debug_frame_dir = os.path.join(video_dir, "tmp_debug_frame")
-        print(f"Debug frame output directory: {os.path.abspath(debug_frame_dir)}")
+        print(f"[debug] Debug frame output directory: {os.path.abspath(debug_frame_dir)}")
         if os.path.exists(debug_frame_dir):
             shutil.rmtree(debug_frame_dir)
         os.makedirs(debug_frame_dir, exist_ok=True)
@@ -188,7 +188,7 @@ def extract_frames(video_path, debug, slides):
         
         if debug:
             # Save processed frame for debugging
-            yuri_filename = os.path.join(output_dir, f"{frame_count:06d}.png")
+            yuri_filename = os.path.join(debug_frame_dir, f"{frame_count:06d}.png")
             cv2.imwrite(yuri_filename, yuri_binary)
         
         similarity = compute_similarity(yuri_binary, reference_image)
@@ -251,7 +251,7 @@ def extract_frames(video_path, debug, slides):
         i += 1
 
     if debug:
-        csv_path = os.path.join(output_dir, "_a.csv")
+        csv_path = os.path.join(debug_frame_dir, "_a.csv")
         with open(csv_path, mode="w", newline="") as csv_file:
             writer = csv.writer(csv_file)
             writer.writerow(["Frame", "Similarity"])
@@ -259,9 +259,11 @@ def extract_frames(video_path, debug, slides):
 
     # Insert slide extraction block before subtitle generation
     merged_intervals = []
+    merge_counts = {}
     previous_slide = None
     previous_start, previous_end = None, None
-
+    renamed_set = set()
+    
     for interval in high_similarity_intervals:
         start_time, end_time = interval
         frame_target = int(start_time * fps) + 2
@@ -271,20 +273,34 @@ def extract_frames(video_path, debug, slides):
         cap.release()
         if not ret:
             continue
-
+        
         x1_s, y1_s = int(SLIDE_X1_RATIO * frame_width), int(SLIDE_Y1_RATIO * frame_height)
         x2_s, y2_s = int(SLIDE_X2_RATIO * frame_width), int(SLIDE_Y2_RATIO * frame_height)
         slide_frame = frame[y1_s:y2_s, x1_s:x2_s]
         current_gray = cv2.cvtColor(slide_frame, cv2.COLOR_BGR2GRAY)
-
+        
         if previous_slide is not None:
             sim = compute_similarity(current_gray, previous_slide)
-            if sim >= 0.95:
-                print(f"Merged interval: similarity={sim:.4f}")
+            if sim >= 0.996:
+                slide_index = len(merged_intervals)
+                if debug:
+                    print(f"[debug] slides similarity={sim:.4f} => merge to {slide_index}!")
+                # Rename the original slide image if it exists and hasn't been renamed yet
+                original_slide = os.path.join(slides_dir, f"{slide_index:04d}.png")
+                if os.path.exists(original_slide) and slide_index not in renamed_set:
+                    new_slide = os.path.join(slides_dir, f"{slide_index:04d}-a.png")
+                    os.rename(original_slide, new_slide)
+                    renamed_set.add(slide_index)
+                count = merge_counts.get(slide_index, 0)
+                merged_path = os.path.join(slides_dir, f"{slide_index:04d}-merged-{count}.png")
+                cv2.imwrite(merged_path, slide_frame)
+                merge_counts[slide_index] = count + 1
                 previous_end = end_time
                 merged_intervals[-1] = (previous_start, previous_end)
                 continue
-
+            elif sim >= 0.993 and debug:
+                print(f"[debug] slides similarity={sim:.4f}")
+        
         slide_path = os.path.join(slides_dir, f"{len(merged_intervals)+1:04d}.png")
         cv2.imwrite(slide_path, slide_frame)
         merged_intervals.append((start_time, end_time))
@@ -322,7 +338,7 @@ def extract_frames(video_path, debug, slides):
     
     print(f"Extracted {frame_count} frames, and generated subtitles at {subtitle_path}")
     if debug:
-        print(f"Saved frame images and similarity data at {output_dir}")
+        print(f"[debug] Saved frame images and similarity data at {debug_frame_dir}")
 
 if __name__ == "__main__":
     args = parse_args()
