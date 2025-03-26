@@ -94,6 +94,10 @@ def get_video_resolution(video_path):
     return None, None
 
 def extract_frames(video_path, debug, slides):
+    """
+    Extract key frame intervals from video based on visual similarity to a reference image.
+    Generates subtitles and optionally slides of each detected interval.
+    """
     # Configuration loading removed; using manual constants
     # Validate THRESHOLD_RATIO
     if not isinstance(THRESHOLD_RATIO, (float, int)) or THRESHOLD_RATIO <= 0 or THRESHOLD_RATIO > 1:
@@ -102,6 +106,7 @@ def extract_frames(video_path, debug, slides):
     if THRESHOLD_RATIO < 0.8:
         print(f"Warning: THRESHOLD_RATIO={THRESHOLD_RATIO} is very low and may lead to false detections.")
 
+    # Prepare directories and temporary slide folder
     video_dir, video_filename = os.path.split(video_path)
     video_name, _ = os.path.splitext(video_filename)
     slides_dir = os.path.join(video_dir, f"{video_name}-slides")
@@ -111,12 +116,14 @@ def extract_frames(video_path, debug, slides):
     os.makedirs(slides_dir, exist_ok=True)
 
     if debug:
+        # Setup debug frame output directory if debug mode is enabled
         debug_frame_dir = os.path.join(video_dir, "tmp_debug_frame")
         print(f"Debug frame output directory: {os.path.abspath(debug_frame_dir)}")
         if os.path.exists(debug_frame_dir):
             shutil.rmtree(debug_frame_dir)
         os.makedirs(debug_frame_dir, exist_ok=True)
     
+    # Open video and validate resolution
     cap = cv2.VideoCapture(video_path)
     if not cap.isOpened():
         print("Error: Cannot open video file.")
@@ -134,6 +141,7 @@ def extract_frames(video_path, debug, slides):
         print("Error: Unsupported aspect ratio.")
         cap.release()
         return
+    # Select config preset based on aspect ratio
     preset = CONFIG_PRESETS[preset_key]
     
     reference_path = os.path.abspath(KUROYURI_PATH)
@@ -143,6 +151,7 @@ def extract_frames(video_path, debug, slides):
         cap.release()
         return
     
+    # Load reference grayscale image for similarity comparison
     reference_image = cv2.imread(reference_path, cv2.IMREAD_GRAYSCALE)
     
     DEFAULT_WIDTH = preset["DEFAULT_WIDTH"]
@@ -166,6 +175,7 @@ def extract_frames(video_path, debug, slides):
     high_similarity_intervals = []
     active_interval = None
     
+    # Iterate over video frames, extract region of interest, compare similarity
     while True:
         ret, frame = cap.read()
         if not ret:
@@ -177,6 +187,7 @@ def extract_frames(video_path, debug, slides):
         yuri_binary = binarize_image(yuri_sharpened)
         
         if debug:
+            # Save processed frame for debugging
             yuri_filename = os.path.join(output_dir, f"{frame_count:06d}.png")
             cv2.imwrite(yuri_filename, yuri_binary)
         
@@ -187,7 +198,7 @@ def extract_frames(video_path, debug, slides):
     
     cap.release()
 
-    # Determine dynamic threshold
+    # Analyze similarity list to extract high similarity intervals
     similarity_values = [sim for _, sim in similarities]
     max_sim = max(similarity_values)
     peak_threshold = max_sim * THRESHOLD_RATIO
@@ -268,6 +279,7 @@ def extract_frames(video_path, debug, slides):
             prev_end = curr_end
             seq += 1
     
+    # Extract a slide image from each interval and save to slides_dir
     for seq, (start_time, end_time) in enumerate(high_similarity_intervals, start=1):
         frame_target = int(start_time * fps) + 2
         cap = cv2.VideoCapture(video_path)
@@ -281,6 +293,7 @@ def extract_frames(video_path, debug, slides):
             cv2.imwrite(slide_path, slide_frame)
         cap.release()
 
+    # Clean up temporary slides folder if not saving output
     if temp_slides:
         shutil.rmtree(slides_dir)
     
