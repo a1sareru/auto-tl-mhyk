@@ -53,6 +53,7 @@ def parse_args():
     parser.add_argument("--input", type=str, required=True, help="Path to the input video file.")
     parser.add_argument("--debug", action="store_true", help="Enable debug mode to save tmp_frame images.")
     parser.add_argument("--slides", action="store_true", help="Enable slides generation for high similarity intervals.")
+    parser.add_argument("--enable-merge", action="store_true", help="Enable merging of similar slides.")
     return parser.parse_args()
 
 def is_valid_aspect_ratio(width, height):
@@ -93,7 +94,7 @@ def get_video_resolution(video_path):
         print(f"FFmpeg error: {e.stderr.decode()}")
     return None, None
 
-def extract_frames(video_path, debug, slides):
+def extract_frames(video_path, debug, slides, enable_merge):
     """
     Extract key frame intervals from video based on visual similarity to a reference image.
     Generates subtitles and optionally slides of each detected interval.
@@ -279,7 +280,7 @@ def extract_frames(video_path, debug, slides):
         slide_frame = frame[y1_s:y2_s, x1_s:x2_s]
         current_gray = cv2.cvtColor(slide_frame, cv2.COLOR_BGR2GRAY)
         
-        if previous_slide is not None:
+        if enable_merge and previous_slide is not None:
             sim = compute_similarity(current_gray, previous_slide)
             if sim >= 0.996:
                 slide_index = len(merged_intervals)
@@ -298,7 +299,7 @@ def extract_frames(video_path, debug, slides):
                 previous_end = end_time
                 merged_intervals[-1] = (previous_start, previous_end)
                 continue
-            elif sim >= 0.993 and debug:
+            elif enable_merge and sim >= 0.992 and debug:
                 print(f"[debug] slides similarity={sim:.4f}")
         
         slide_path = os.path.join(slides_dir, f"{len(merged_intervals)+1:04d}.png")
@@ -342,4 +343,4 @@ def extract_frames(video_path, debug, slides):
 
 if __name__ == "__main__":
     args = parse_args()
-    extract_frames(args.input, args.debug, args.slides)
+    extract_frames(args.input, args.debug, args.slides, args.enable_merge)
