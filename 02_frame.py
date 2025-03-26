@@ -103,12 +103,13 @@ def extract_frames(video_path, debug, slides):
         print(f"Warning: THRESHOLD_RATIO={THRESHOLD_RATIO} is very low and may lead to false detections.")
 
     video_dir, video_filename = os.path.split(video_path)
-    output_dir = os.path.join(video_dir, "tmp_debug_frame")
-    print(f"Debug frame output directory: {os.path.abspath(output_dir)}")
+
     if debug:
-        if os.path.exists(output_dir):
-            shutil.rmtree(output_dir)
-        os.makedirs(output_dir, exist_ok=True)
+        debug_frame_dir = os.path.join(video_dir, "tmp_debug_frame")
+        print(f"Debug frame output directory: {os.path.abspath(debug_frame_dir)}")
+        if os.path.exists(debug_frame_dir):
+            shutil.rmtree(debug_frame_dir)
+        os.makedirs(debug_frame_dir, exist_ok=True)
     
     cap = cv2.VideoCapture(video_path)
     if not cap.isOpened():
