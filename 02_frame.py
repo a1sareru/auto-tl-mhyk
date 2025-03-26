@@ -103,6 +103,12 @@ def extract_frames(video_path, debug, slides):
         print(f"Warning: THRESHOLD_RATIO={THRESHOLD_RATIO} is very low and may lead to false detections.")
 
     video_dir, video_filename = os.path.split(video_path)
+    video_name, _ = os.path.splitext(video_filename)
+    slides_dir = os.path.join(video_dir, f"{video_name}-slides")
+    temp_slides = not slides
+    if os.path.exists(slides_dir):
+        shutil.rmtree(slides_dir)
+    os.makedirs(slides_dir, exist_ok=True)
 
     if debug:
         debug_frame_dir = os.path.join(video_dir, "tmp_debug_frame")
@@ -262,24 +268,21 @@ def extract_frames(video_path, debug, slides):
             prev_end = curr_end
             seq += 1
     
-    if slides:
-        slides_dir = os.path.join(video_dir, f"{video_name}-slides")
-        if os.path.exists(slides_dir):
-            shutil.rmtree(slides_dir)
-        os.makedirs(slides_dir, exist_ok=True)
+    for seq, (start_time, end_time) in enumerate(high_similarity_intervals, start=1):
+        frame_target = int(start_time * fps) + 2
+        cap = cv2.VideoCapture(video_path)
+        cap.set(cv2.CAP_PROP_POS_FRAMES, frame_target)
+        ret, frame = cap.read()
+        if ret:
+            x1_s, y1_s = int(SLIDE_X1_RATIO * frame_width), int(SLIDE_Y1_RATIO * frame_height)
+            x2_s, y2_s = int(SLIDE_X2_RATIO * frame_width), int(SLIDE_Y2_RATIO * frame_height)
+            slide_frame = frame[y1_s:y2_s, x1_s:x2_s]
+            slide_path = os.path.join(slides_dir, f"{seq:04d}.png")
+            cv2.imwrite(slide_path, slide_frame)
+        cap.release()
 
-        for seq, (start_time, end_time) in enumerate(high_similarity_intervals, start=1):
-            frame_target = int(start_time * fps) + 2
-            cap = cv2.VideoCapture(video_path)
-            cap.set(cv2.CAP_PROP_POS_FRAMES, frame_target)
-            ret, frame = cap.read()
-            if ret:
-                x1_s, y1_s = int(SLIDE_X1_RATIO * frame_width), int(SLIDE_Y1_RATIO * frame_height)
-                x2_s, y2_s = int(SLIDE_X2_RATIO * frame_width), int(SLIDE_Y2_RATIO * frame_height)
-                slide_frame = frame[y1_s:y2_s, x1_s:x2_s]
-                slide_path = os.path.join(slides_dir, f"{seq:04d}.png")
-                cv2.imwrite(slide_path, slide_frame)
-            cap.release()
+    if temp_slides:
+        shutil.rmtree(slides_dir)
     
     print(f"Extracted {frame_count} frames, and generated subtitles at {subtitle_path}")
     if debug:
