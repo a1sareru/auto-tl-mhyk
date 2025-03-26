@@ -23,10 +23,10 @@ CONFIG_PRESETS = {
     "9_16": {
         "DEFAULT_WIDTH": 1080,
         "DEFAULT_HEIGHT": 1920,
-        "CROP_X1_RATIO": 0.872,
-        "CROP_Y1_RATIO": 0.809,
-        "CROP_X2_RATIO": 0.94,
-        "CROP_Y2_RATIO": 0.85,
+        "YURI_X1_RATIO": 0.872,
+        "YURI_Y1_RATIO": 0.809,
+        "YURI_X2_RATIO": 0.94,
+        "YURI_Y2_RATIO": 0.85,
         "SLIDE_X1_RATIO": 0.074,
         "SLIDE_Y1_RATIO": 0.672,
         "SLIDE_X2_RATIO": 0.888,
@@ -36,10 +36,10 @@ CONFIG_PRESETS = {
         # Preset for aspect ratio 9:19.5
         "DEFAULT_WIDTH": 1080,
         "DEFAULT_HEIGHT": 2340,
-        "CROP_X1_RATIO": 0.872,
-        "CROP_Y1_RATIO": 0.757,
-        "CROP_X2_RATIO": 0.945,
-        "CROP_Y2_RATIO": 0.794,
+        "YURI_X1_RATIO": 0.872,
+        "YURI_Y1_RATIO": 0.757,
+        "YURI_X2_RATIO": 0.945,
+        "YURI_Y2_RATIO": 0.794,
         "SLIDE_X1_RATIO": 0.082,
         "SLIDE_Y1_RATIO": 0.641,
         "SLIDE_X2_RATIO": 0.884,
@@ -142,18 +142,18 @@ def extract_frames(video_path, debug, slides):
     DEFAULT_WIDTH = preset["DEFAULT_WIDTH"]
     DEFAULT_HEIGHT = preset["DEFAULT_HEIGHT"]
     
-    CROP_X1_RATIO = preset["CROP_X1_RATIO"]
-    CROP_Y1_RATIO = preset["CROP_Y1_RATIO"]
-    CROP_X2_RATIO = preset["CROP_X2_RATIO"]
-    CROP_Y2_RATIO = preset["CROP_Y2_RATIO"]
+    YURI_X1_RATIO = preset["YURI_X1_RATIO"]
+    YURI_Y1_RATIO = preset["YURI_Y1_RATIO"]
+    YURI_X2_RATIO = preset["YURI_X2_RATIO"]
+    YURI_Y2_RATIO = preset["YURI_Y2_RATIO"]
 
     SLIDE_X1_RATIO = preset["SLIDE_X1_RATIO"]
     SLIDE_Y1_RATIO = preset["SLIDE_Y1_RATIO"]
     SLIDE_X2_RATIO = preset["SLIDE_X2_RATIO"]
     SLIDE_Y2_RATIO = preset["SLIDE_Y2_RATIO"]
 
-    x1, y1 = int(CROP_X1_RATIO * frame_width), int(CROP_Y1_RATIO * frame_height)
-    x2, y2 = int(CROP_X2_RATIO * frame_width), int(CROP_Y2_RATIO * frame_height)
+    x1, y1 = int(YURI_X1_RATIO * frame_width), int(YURI_Y1_RATIO * frame_height)
+    x2, y2 = int(YURI_X2_RATIO * frame_width), int(YURI_Y2_RATIO * frame_height)
     
     frame_count = 0
     similarities = []
