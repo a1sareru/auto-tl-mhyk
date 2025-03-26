@@ -257,6 +257,21 @@ def extract_frames(video_path, debug, slides):
             writer.writerow(["Frame", "Similarity"])
             writer.writerows(similarities)
 
+    # Insert slide extraction block before subtitle generation
+    # Extract a slide image from each interval and save to slides_dir
+    for seq, (start_time, end_time) in enumerate(high_similarity_intervals, start=1):
+        frame_target = int(start_time * fps) + 2
+        cap = cv2.VideoCapture(video_path)
+        cap.set(cv2.CAP_PROP_POS_FRAMES, frame_target)
+        ret, frame = cap.read()
+        if ret:
+            x1_s, y1_s = int(SLIDE_X1_RATIO * frame_width), int(SLIDE_Y1_RATIO * frame_height)
+            x2_s, y2_s = int(SLIDE_X2_RATIO * frame_width), int(SLIDE_Y2_RATIO * frame_height)
+            slide_frame = frame[y1_s:y2_s, x1_s:x2_s]
+            slide_path = os.path.join(slides_dir, f"{seq:04d}.png")
+            cv2.imwrite(slide_path, slide_frame)
+        cap.release()
+
     video_dir, video_filename = os.path.split(video_path)
     video_name, _ = os.path.splitext(video_filename)
     subtitle_path = os.path.join(video_dir, f"{video_name}.srt")
@@ -279,19 +294,6 @@ def extract_frames(video_path, debug, slides):
             prev_end = curr_end
             seq += 1
     
-    # Extract a slide image from each interval and save to slides_dir
-    for seq, (start_time, end_time) in enumerate(high_similarity_intervals, start=1):
-        frame_target = int(start_time * fps) + 2
-        cap = cv2.VideoCapture(video_path)
-        cap.set(cv2.CAP_PROP_POS_FRAMES, frame_target)
-        ret, frame = cap.read()
-        if ret:
-            x1_s, y1_s = int(SLIDE_X1_RATIO * frame_width), int(SLIDE_Y1_RATIO * frame_height)
-            x2_s, y2_s = int(SLIDE_X2_RATIO * frame_width), int(SLIDE_Y2_RATIO * frame_height)
-            slide_frame = frame[y1_s:y2_s, x1_s:x2_s]
-            slide_path = os.path.join(slides_dir, f"{seq:04d}.png")
-            cv2.imwrite(slide_path, slide_frame)
-        cap.release()
 
     # Clean up temporary slides folder if not saving output
     if temp_slides:
