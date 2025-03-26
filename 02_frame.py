@@ -166,15 +166,15 @@ def extract_frames(video_path, debug, slides):
             break
         
         time_stamp = frame_count / fps
-        cropped_frame = frame[y1:y2, x1:x2]
-        sharpened_frame = enhance_sharpness(cropped_frame)
-        binary_frame = binarize_image(sharpened_frame)
+        yuri_area = frame[y1:y2, x1:x2]
+        yuri_sharpened = enhance_sharpness(yuri_area)
+        yuri_binary = binarize_image(yuri_sharpened)
         
         if debug:
-            frame_filename = os.path.join(output_dir, f"{frame_count:06d}.png")
-            cv2.imwrite(frame_filename, binary_frame)
+            yuri_filename = os.path.join(output_dir, f"{frame_count:06d}.png")
+            cv2.imwrite(yuri_filename, yuri_binary)
         
-        similarity = compute_similarity(binary_frame, reference_image)
+        similarity = compute_similarity(yuri_binary, reference_image)
         similarities.append([frame_count, similarity])
         
         frame_count += 1
