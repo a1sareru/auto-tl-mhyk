@@ -113,7 +113,7 @@ def main():
         description="Process images to extract OCR results and save as CSV.",
         formatter_class=argparse.ArgumentDefaultsHelpFormatter
     )
-    parser.add_argument("--slides-path", required=True,
+    parser.add_argument("--slides", required=True,
                         help="Path to the slides folder containing PNG images.")
     parser.add_argument("--chn", action="store_true",
                         help="Enable Chinese translation output.")

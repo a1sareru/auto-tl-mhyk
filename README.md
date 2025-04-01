@@ -232,11 +232,11 @@ python 02_frame.py --input input.mp4 --debug --slides
 
 **用法**
 ```sh
-python 03_ocr.py --slides-path <slides目录路径> [--chn]
+python 03_ocr.py --slides <slides目录路径> [--chn]
 ```
 
 **参数说明**
-* `--slides-path` : 幻灯片帧所在的目录路径（必填）。
+* `--slides` : 幻灯片帧所在的目录路径（必填）。
 * `--chn`         : 启用日语到中文的自动翻译（可选）。
 
 **处理逻辑**
@@ -255,7 +255,7 @@ python 03_ocr.py --slides-path <slides目录路径> [--chn]
 
 **使用示例**
 ```sh
-python 03_ocr.py --slides-path slides/ --chn
+python 03_ocr.py --slides slides/ --chn
 ```
 
 ## Roadmap
