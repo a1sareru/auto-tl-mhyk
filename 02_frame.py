@@ -364,10 +364,10 @@ def extract_frames(video_path, debug, slides, enable_merge):
         seq = 1
         prev_end = 0.0
         for interval in high_similarity_intervals:
-            curr_end = interval[1]
+            curr_end = interval[1] + 0.1
 
             # Shift the start time slightly after the previous end (except for the first interval)
-            adjusted_start = prev_end + 0.05 if prev_end > 0 else prev_end
+            adjusted_start = prev_end if prev_end > 0 else prev_end
 
             start_str = f"{int(adjusted_start // 3600):02}:{int((adjusted_start % 3600) // 60):02}:{int(adjusted_start % 60):02},{int((adjusted_start % 1) * 1000):03}"
             end_str = f"{int(curr_end // 3600):02}:{int((curr_end % 3600) // 60):02}:{int(curr_end % 60):02},{int((curr_end % 1) * 1000):03}"
