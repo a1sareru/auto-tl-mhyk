@@ -258,38 +258,21 @@ def extract_frames(video_path, debug, slides, enable_merge):
     peak_intervals_sec = [(start / fps, end / fps)
                           for start, end in peak_intervals]
 
-    # Pair peak intervals
+    # Merge peak intervals based on time gap threshold
+    MERGE_GAP_THRESHOLD = 0.8  # seconds
+
     high_similarity_intervals = []
-    i = 0
-    while i < len(peak_intervals_sec):
-        if i + 1 < len(peak_intervals_sec):
-            start1, end1 = peak_intervals_sec[i]
-            start2, end2 = peak_intervals_sec[i + 1]
-            if start2 - end1 <= 1.0:  # max allowed gap between peaks
-                high_similarity_intervals.append((start1, end2))
-                i += 2
-                continue
+    if peak_intervals_sec:
+        current_start, current_end = peak_intervals_sec[0]
 
-        # !The remaining lines in the while-loop is for handling edge cases
-        # !Not thoroughly tested since it hardly occurs
+        for next_start, next_end in peak_intervals_sec[1:]:
+            if next_start - current_end <= MERGE_GAP_THRESHOLD:
+                current_end = next_end
+            else:
+                high_similarity_intervals.append((current_start, current_end))
+                current_start, current_end = next_start, next_end
 
-        # Check if current peak is isolated
-        prev_gap = float(
-            'inf') if i == 0 else peak_intervals_sec[i][0] - peak_intervals_sec[i - 1][1]
-        next_gap = float('inf') if i == len(peak_intervals_sec) - \
-            1 else peak_intervals_sec[i + 1][0] - peak_intervals_sec[i][1]
-
-        if prev_gap > 2.0 and next_gap > 2.0:
-            start, end = peak_intervals_sec[i]
-            # Treat as self-contained interval
-            high_similarity_intervals.append((start, end))
-            print(
-                f"unpaired peak at {start:.2f} - {end:.2f} was treated as a self-contained interval")
-        elif (prev_gap > 2.0 or next_gap > 2.0) and prev_gap > 1.0 and next_gap > 1.0:
-            start, end = peak_intervals_sec[i]
-            print(
-                f"unpaired peak after seq{i} at {start:.2f} - {end:.2f} was skipped for it is not isolated")
-        i += 1
+        high_similarity_intervals.append((current_start, current_end))
 
     if debug:
         csv_path = os.path.join(debug_frame_dir, "_a.csv")
