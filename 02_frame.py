@@ -259,7 +259,7 @@ def extract_frames(video_path, debug, slides, enable_merge):
                           for start, end in peak_intervals]
 
     # Merge peak intervals based on time gap threshold
-    MERGE_GAP_THRESHOLD = 0.8  # seconds
+    MERGE_GAP_THRESHOLD = 0.7  # seconds
 
     high_similarity_intervals = []
     if peak_intervals_sec:
