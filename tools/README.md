@@ -13,12 +13,11 @@
 ### 用法
 
 ```sh
-python ass2srt_batch.py --input <输入字幕目录> [--output <输出目录>]
+python ass2srt_batch.py <输入字幕目录>
 ```
 
 **参数说明**
-- `--input` : 包含 `.ass` 文件的输入目录（必填）。
-- `--output` : 输出目录（选填），默认为当前目录下的 `tmp-srt`。
+- `<输入字幕目录>` : 包含 `.ass` 文件的输入目录（必填）。
 
 ### 功能说明
 1. 遍历输入目录下所有 `.ass` 文件。

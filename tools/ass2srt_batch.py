@@ -11,12 +11,11 @@ def convert_ass_to_srt(input_path: Path, output_path: Path):
 
 def main():
     parser = argparse.ArgumentParser(description="批量将ASS字幕转为SRT格式")
-    parser.add_argument("--input", required=True, help="输入目录，包含ass字幕")
-    parser.add_argument("--output", default="tmp-srt", help="输出目录（默认：当前目录下的tmp-srt）")
+    parser.add_argument("input", help="输入目录，包含ass字幕")
     
     args = parser.parse_args()
     input_dir = Path(args.input)
-    output_dir = Path(args.output)
+    output_dir = input_dir / "srt"
 
     if not input_dir.exists() or not input_dir.is_dir():
         print("输入目录不存在或不是目录")
