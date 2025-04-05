@@ -5,8 +5,7 @@ import cv2
 import numpy as np
 import csv
 import ffmpeg
-import re
-import yaml
+
 
 # === User's Configuration ===
 # Path to the reference image (can be modified as needed)
