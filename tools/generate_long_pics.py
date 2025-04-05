@@ -71,7 +71,7 @@ def main():
     args = parser.parse_args()
     
     slides_path = args.slides
-    slides_long_path = os.path.join(os.path.dirname(slides_path), "slides-long")
+    slides_long_path = slides_path + "-long"
     
     images = load_images(slides_path)
     if not images:
