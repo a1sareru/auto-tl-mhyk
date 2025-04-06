@@ -38,7 +38,8 @@ CONFIG_PRESETS = {
         "SLIDE_Y2_RATIO": 0.839
     },
     # "9_19.5": {
-    #     # for samsung's 9:19.5 aspect ratio(?)
+    #     # set 1
+    #     # aka; no crop
     #     # Preset for aspect ratio 9:19.5
     #     "DEFAULT_WIDTH": 1080,
     #     "DEFAULT_HEIGHT": 2340,
@@ -52,19 +53,37 @@ CONFIG_PRESETS = {
     #     "SLIDE_Y2_RATIO": 0.773
     # },
     "9_19.5": {
+        # set 2
         # for kuroyuri bunshou group's main story part 2
+        # crop=1080:2340:0:30
         # Preset for aspect ratio 9:19.5
         "DEFAULT_WIDTH": 1080,
         "DEFAULT_HEIGHT": 2340,
         "YURI_X1_RATIO": 0.872,
-        "YURI_Y1_RATIO": 0.741,
+        "YURI_Y1_RATIO": 0.755,
         "YURI_X2_RATIO": 0.945,
-        "YURI_Y2_RATIO": 0.778,
+        "YURI_Y2_RATIO": 0.792,
         "SLIDE_X1_RATIO": 0.082,
         "SLIDE_Y1_RATIO": 0.641,
         "SLIDE_X2_RATIO": 0.884,
         "SLIDE_Y2_RATIO": 0.773
-    }
+    },
+    # "9_19.5": {
+    #     # set 3
+    #     # for kuroyuri bunshou group's main story part 2
+    #     # crop=1080:2340:0:60
+    #     # Preset for aspect ratio 9:19.5
+    #     "DEFAULT_WIDTH": 1080,
+    #     "DEFAULT_HEIGHT": 2340,
+    #     "YURI_X1_RATIO": 0.872,
+    #     "YURI_Y1_RATIO": 0.741,
+    #     "YURI_X2_RATIO": 0.945,
+    #     "YURI_Y2_RATIO": 0.778,
+    #     "SLIDE_X1_RATIO": 0.082,
+    #     "SLIDE_Y1_RATIO": 0.641,
+    #     "SLIDE_X2_RATIO": 0.884,
+    #     "SLIDE_Y2_RATIO": 0.773
+    # }
 }
 
 
