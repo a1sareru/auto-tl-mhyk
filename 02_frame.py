@@ -171,7 +171,7 @@ def extract_frames(video_path, debug, slides, enable_merge):
         # Setup debug frame output directory if debug mode is enabled
         debug_frame_dir = os.path.join(video_dir, "tmp_debug_frame")
         print(
-            f"[debug] Debug frame output directory: {os.path.abspath(debug_frame_dir)}")
+            f"[DEBUG] Debug frame output directory: {os.path.abspath(debug_frame_dir)}")
         if os.path.exists(debug_frame_dir):
             shutil.rmtree(debug_frame_dir)
         os.makedirs(debug_frame_dir, exist_ok=True)
@@ -342,11 +342,11 @@ def extract_frames(video_path, debug, slides, enable_merge):
             sim = compute_similarity(current_gray, previous_slide)
 
             if sim >= ENABLE_MERGE_REPORT_THRESHOLD:
-                print(f"[info] slides similarity={sim:.4f} (vs previous #{len(merged_intervals):04d})")
+                print(f"[INFO] slides similarity={sim:.4f} (vs previous #{len(merged_intervals):04d})")
 
             if enable_merge and sim >= ENABLE_MERGE_THRESHOLD:
                 slide_index = len(merged_intervals)
-                print(f"[info] slides similarity={sim:.4f} => merge to #{slide_index:04d} (prev)")
+                print(f"[INFO] slides similarity={sim:.4f} => merge to #{slide_index:04d} (prev)")
                 # Rename the original slide image if it exists and hasn't been renamed yet
                 original_slide = os.path.join(slides_dir, f"{slide_index:04d}.png")
                 if os.path.exists(original_slide) and slide_index not in renamed_set:
@@ -400,7 +400,7 @@ def extract_frames(video_path, debug, slides, enable_merge):
         f"Extracted {frame_count} frames, and generated subtitles at {subtitle_path}")
     if debug:
         print(
-            f"[debug] Saved frame images and similarity data at {debug_frame_dir}")
+            f"[DEBUG] Saved frame images and similarity data at {debug_frame_dir}")
 
 
 if __name__ == "__main__":
