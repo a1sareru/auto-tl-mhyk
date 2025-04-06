@@ -291,37 +291,33 @@ def extract_frames(video_path, debug, slides, enable_merge):
     peak_intervals_sec = [(start / fps, end / fps)
                           for start, end in peak_intervals]
 
-    # Merge peak intervals based on time gap and flatness (standard deviation)
-    MERGE_GAP_THRESHOLD = 0.7  # seconds
-    FLATNESS_STD_THRESHOLD = 0.002  # std-dev threshold for considering a region "flat"
-
+    # Merge peak intervals only if gap duration < 0.83 seconds
     high_similarity_intervals = []
     if peak_intervals_sec:
-        previous_start, previous_end = peak_intervals_sec[0]
-
-        for (current_start, current_end) in peak_intervals_sec[1:]:
-            time_gap = current_start - previous_end
-            if time_gap <= MERGE_GAP_THRESHOLD:
-                # Extract gap similarity values between previous_end and current_start
-                gap_start_frame = int(previous_end * fps)
-                gap_end_frame = int(current_start * fps)
-                gap_sims = [sim for frame, sim in similarities if gap_start_frame < frame < gap_end_frame]
-
-                std_dev = np.std(gap_sims) if gap_sims else 0
-
-                if std_dev < FLATNESS_STD_THRESHOLD:
-                    # Flat region → treat as break → do not merge
-                    high_similarity_intervals.append((previous_start, previous_end))
-                    previous_start, previous_end = current_start, current_end
-                else:
-                    # Not flat → treat as same region
-                    previous_end = current_end
+        previous_start_frame, previous_end_frame = peak_intervals[0]
+        for i in range(1, len(peak_intervals)):
+            current_start_frame, current_end_frame = peak_intervals[i]
+            gap_start_frame = previous_end_frame + 1
+            gap_end_frame = current_start_frame - 1
+            gap_duration = gap_end_frame - gap_start_frame + 1
+ 
+            # Use time-based merging threshold for robustness across frame rates
+            gap_duration_sec = gap_duration / fps
+            if gap_duration_sec < 0.83:
+                # Merge: extend previous interval
+                previous_end_frame = current_end_frame
             else:
-                # Gap too large → do not merge
-                high_similarity_intervals.append((previous_start, previous_end))
-                previous_start, previous_end = current_start, current_end
-
-        high_similarity_intervals.append((previous_start, previous_end))
+                # Save and start a new one
+                high_similarity_intervals.append((
+                    previous_start_frame / fps,
+                    previous_end_frame / fps
+                ))
+                previous_start_frame, previous_end_frame = current_start_frame, current_end_frame
+ 
+        high_similarity_intervals.append((
+            previous_start_frame / fps,
+            previous_end_frame / fps
+        ))
 
     if debug:
         csv_path = os.path.join(debug_frame_dir, "_a.csv")
