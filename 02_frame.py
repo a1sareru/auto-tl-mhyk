@@ -15,7 +15,7 @@ KUROYURI_PATH = "kuroyuri.png"
 
 # Similarity threshold ratio for detecting frame peaks (default: 0.97)
 # 相似度阈值，用于识别高峰帧区间（默认值：0.97）
-THRESHOLD_RATIO = 0.97
+THRESHOLD_RATIO = 0.95
 
 # Delay to add to the end of each subtitle interval (default: 0.1 seconds)
 # 每个字幕区间结束时添加的延迟（默认值：0.1秒）
@@ -28,6 +28,10 @@ ENABLE_MERGE_THRESHOLD = 0.996
 # Reporting threshold for "Enable Merge" option (default: 0.992)
 # "启用合并"选项的报告阈值（默认值：0.992）
 ENABLE_MERGE_REPORT_THRESHOLD = 0.992
+
+# Duration threshold for merging intervals (default: 0.5 seconds)
+# 合并区间的持续时间阈值（默认值：0.5秒）
+GAP_DURATION_THRESHOLD = 0.35  # seconds
 
 ### === User's Configuration End ===
 
@@ -53,9 +57,9 @@ CONFIG_PRESETS = {
     #     "DEFAULT_WIDTH": 1080,
     #     "DEFAULT_HEIGHT": 2340,
     #     "YURI_X1_RATIO": 0.872,
-    #     "YURI_Y1_RATIO": 0.757,
+    #     "YURI_Y1_RATIO": 0.755,
     #     "YURI_X2_RATIO": 0.945,
-    #     "YURI_Y2_RATIO": 0.794,
+    #     "YURI_Y2_RATIO": 0.792,
     #     "SLIDE_X1_RATIO": 0.082,
     #     "SLIDE_Y1_RATIO": 0.641,
     #     "SLIDE_X2_RATIO": 0.884,
@@ -76,23 +80,7 @@ CONFIG_PRESETS = {
         "SLIDE_Y1_RATIO": 0.641,
         "SLIDE_X2_RATIO": 0.884,
         "SLIDE_Y2_RATIO": 0.773
-    },
-    # "9_19.5": {
-    #     # set 3
-    #     # for kuroyuri bunshou group's main story part 2
-    #     # crop=1080:2340:0:60
-    #     # Preset for aspect ratio 9:19.5
-    #     "DEFAULT_WIDTH": 1080,
-    #     "DEFAULT_HEIGHT": 2340,
-    #     "YURI_X1_RATIO": 0.872,
-    #     "YURI_Y1_RATIO": 0.741,
-    #     "YURI_X2_RATIO": 0.945,
-    #     "YURI_Y2_RATIO": 0.778,
-    #     "SLIDE_X1_RATIO": 0.082,
-    #     "SLIDE_Y1_RATIO": 0.641,
-    #     "SLIDE_X2_RATIO": 0.884,
-    #     "SLIDE_Y2_RATIO": 0.773
-    # }
+    }
 }
 
 
@@ -291,7 +279,7 @@ def extract_frames(video_path, debug, slides, enable_merge):
     peak_intervals_sec = [(start / fps, end / fps)
                           for start, end in peak_intervals]
 
-    # Merge peak intervals only if gap duration < 0.83 seconds
+    # Merge peak intervals only if gap duration < GAP_DURATION_THRESHOLD
     high_similarity_intervals = []
     if peak_intervals_sec:
         previous_start_frame, previous_end_frame = peak_intervals[0]
@@ -303,7 +291,7 @@ def extract_frames(video_path, debug, slides, enable_merge):
  
             # Use time-based merging threshold for robustness across frame rates
             gap_duration_sec = gap_duration / fps
-            if gap_duration_sec < 0.83:
+            if gap_duration_sec < GAP_DURATION_THRESHOLD:
                 # Merge: extend previous interval
                 previous_end_frame = current_end_frame
             else:
