@@ -16,6 +16,12 @@ KUROYURI_PATH = "kuroyuri.png"
 # 相似度阈值，用于识别高峰帧区间（默认值：0.97）
 THRESHOLD_RATIO = 0.97
 
+# Delay to add to the end of each subtitle interval (default: 0.1 seconds)
+# 每个字幕区间结束时添加的延迟（默认值：0.1秒）
+END_DELAY = 0.09 # seconds
+
+### === User's Configuration End ===
+
 # Configuration Presets
 
 CONFIG_PRESETS = {
@@ -346,7 +352,7 @@ def extract_frames(video_path, debug, slides, enable_merge):
         seq = 1
         prev_end = 0.0
         for interval in high_similarity_intervals:
-            curr_end = interval[1] + 0.09
+            curr_end = interval[1] + END_DELAY
 
             # Shift the start time slightly after the previous end (except for the first interval)
             adjusted_start = prev_end if prev_end > 0 else prev_end
