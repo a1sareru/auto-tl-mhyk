@@ -338,31 +338,28 @@ def extract_frames(video_path, debug, slides, enable_merge):
         slide_frame = frame[y1_s:y2_s, x1_s:x2_s]
         current_gray = cv2.cvtColor(slide_frame, cv2.COLOR_BGR2GRAY)
 
-        if enable_merge and previous_slide is not None:
+        if previous_slide is not None:
             sim = compute_similarity(current_gray, previous_slide)
-            if sim >= ENABLE_MERGE_THRESHOLD:
+
+            if sim >= ENABLE_MERGE_REPORT_THRESHOLD:
+                print(f"[info] slides similarity={sim:.4f} (vs previous #{len(merged_intervals):04d})")
+
+            if enable_merge and sim >= ENABLE_MERGE_THRESHOLD:
                 slide_index = len(merged_intervals)
-                if debug:
-                    print(
-                        f"[debug] slides similarity={sim:.4f} => merge to {slide_index}!")
+                print(f"[info] slides similarity={sim:.4f} => merge to #{slide_index:04d} (prev)")
                 # Rename the original slide image if it exists and hasn't been renamed yet
-                original_slide = os.path.join(
-                    slides_dir, f"{slide_index:04d}.png")
+                original_slide = os.path.join(slides_dir, f"{slide_index:04d}.png")
                 if os.path.exists(original_slide) and slide_index not in renamed_set:
-                    new_slide = os.path.join(
-                        slides_dir, f"{slide_index:04d}-a.png")
+                    new_slide = os.path.join(slides_dir, f"{slide_index:04d}-a.png")
                     os.rename(original_slide, new_slide)
                     renamed_set.add(slide_index)
                 count = merge_counts.get(slide_index, 0)
-                merged_path = os.path.join(
-                    slides_dir, f"{slide_index:04d}-merged-{count}.png")
+                merged_path = os.path.join(slides_dir, f"{slide_index:04d}-merged-{count}.png")
                 cv2.imwrite(merged_path, slide_frame)
                 merge_counts[slide_index] = count + 1
                 previous_end = end_time
                 merged_intervals[-1] = (previous_start, previous_end)
                 continue
-            elif enable_merge and sim >= ENABLE_MERGE_REPORT_THRESHOLD and debug:
-                print(f"[debug] slides similarity={sim:.4f}")
 
         slide_path = os.path.join(
             slides_dir, f"{len(merged_intervals)+1:04d}.png")
