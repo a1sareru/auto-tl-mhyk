@@ -8,6 +8,7 @@ import ffmpeg
 
 
 # === User's Configuration ===
+
 # Path to the reference image (can be modified as needed)
 # 参考图像路径（可按需修改）
 KUROYURI_PATH = "kuroyuri.png"
@@ -19,6 +20,14 @@ THRESHOLD_RATIO = 0.97
 # Delay to add to the end of each subtitle interval (default: 0.1 seconds)
 # 每个字幕区间结束时添加的延迟（默认值：0.1秒）
 END_DELAY = 0.09 # seconds
+
+# Threshold for "Enable Merge" option (default: 0.996)
+# "启用合并"选项的阈值（默认值：0.996）
+ENABLE_MERGE_THRESHOLD = 0.996
+
+# Reporting threshold for "Enable Merge" option (default: 0.992)
+# "启用合并"选项的报告阈值（默认值：0.992）
+ENABLE_MERGE_REPORT_THRESHOLD = 0.992
 
 ### === User's Configuration End ===
 
@@ -282,21 +291,37 @@ def extract_frames(video_path, debug, slides, enable_merge):
     peak_intervals_sec = [(start / fps, end / fps)
                           for start, end in peak_intervals]
 
-    # Merge peak intervals based on time gap threshold
+    # Merge peak intervals based on time gap and flatness (standard deviation)
     MERGE_GAP_THRESHOLD = 0.7  # seconds
+    FLATNESS_STD_THRESHOLD = 0.002  # std-dev threshold for considering a region "flat"
 
     high_similarity_intervals = []
     if peak_intervals_sec:
-        current_start, current_end = peak_intervals_sec[0]
+        previous_start, previous_end = peak_intervals_sec[0]
 
-        for next_start, next_end in peak_intervals_sec[1:]:
-            if next_start - current_end <= MERGE_GAP_THRESHOLD:
-                current_end = next_end
+        for (current_start, current_end) in peak_intervals_sec[1:]:
+            time_gap = current_start - previous_end
+            if time_gap <= MERGE_GAP_THRESHOLD:
+                # Extract gap similarity values between previous_end and current_start
+                gap_start_frame = int(previous_end * fps)
+                gap_end_frame = int(current_start * fps)
+                gap_sims = [sim for frame, sim in similarities if gap_start_frame < frame < gap_end_frame]
+
+                std_dev = np.std(gap_sims) if gap_sims else 0
+
+                if std_dev < FLATNESS_STD_THRESHOLD:
+                    # Flat region → treat as break → do not merge
+                    high_similarity_intervals.append((previous_start, previous_end))
+                    previous_start, previous_end = current_start, current_end
+                else:
+                    # Not flat → treat as same region
+                    previous_end = current_end
             else:
-                high_similarity_intervals.append((current_start, current_end))
-                current_start, current_end = next_start, next_end
+                # Gap too large → do not merge
+                high_similarity_intervals.append((previous_start, previous_end))
+                previous_start, previous_end = current_start, current_end
 
-        high_similarity_intervals.append((current_start, current_end))
+        high_similarity_intervals.append((previous_start, previous_end))
 
     if debug:
         csv_path = os.path.join(debug_frame_dir, "_a.csv")
@@ -331,7 +356,7 @@ def extract_frames(video_path, debug, slides, enable_merge):
 
         if enable_merge and previous_slide is not None:
             sim = compute_similarity(current_gray, previous_slide)
-            if sim >= 0.996:
+            if sim >= ENABLE_MERGE_THRESHOLD:
                 slide_index = len(merged_intervals)
                 if debug:
                     print(
@@ -352,7 +377,7 @@ def extract_frames(video_path, debug, slides, enable_merge):
                 previous_end = end_time
                 merged_intervals[-1] = (previous_start, previous_end)
                 continue
-            elif enable_merge and sim >= 0.992 and debug:
+            elif enable_merge and sim >= ENABLE_MERGE_REPORT_THRESHOLD and debug:
                 print(f"[debug] slides similarity={sim:.4f}")
 
         slide_path = os.path.join(
