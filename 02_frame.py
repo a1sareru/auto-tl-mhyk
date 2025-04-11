@@ -171,7 +171,7 @@ def extract_frames(video_path, debug, slides, enable_merge):
         # Setup debug frame output directory if debug mode is enabled
         debug_frame_dir = os.path.join(video_dir, "tmp_debug_frame")
         print(
-            f"[DEBUG] Debug frame output directory: {os.path.abspath(debug_frame_dir)}")
+            f"[DEBUG] Debug frame output directory: {debug_frame_dir}")
         if os.path.exists(debug_frame_dir):
             shutil.rmtree(debug_frame_dir)
         os.makedirs(debug_frame_dir, exist_ok=True)
