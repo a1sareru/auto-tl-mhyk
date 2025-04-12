@@ -395,6 +395,7 @@ def extract_frames(video_path, debug, slides, enable_merge):
             prev_end = curr_end
             seq += 1
 
+    print(f"Total subtitles generated: {seq - 1}")
     # Clean up temporary slides folder if not saving output
     if temp_slides:
         shutil.rmtree(slides_dir)
