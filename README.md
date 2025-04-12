@@ -56,17 +56,19 @@
 
 ### 如何开始使用
 
-下载（右上角绿色 `Code` 按钮 → ' Download ZIP'）并解压代码（或 `git clone`本仓库）即可使用相关功能。
+下载本仓库源代码。
+- 方法1: 右上角绿色 `Code` 按钮 → ' Download ZIP'），并解压代码
+- 方法2:  `git clone` 本仓库
 
-假设解压后的目录为**工作目录**。
+> 假设解压后得到的目录为**工作目录**。
 
-确认本地安装了 `Python` 和 `ffmpeg`，并均已加入环境变量（Environment Variable）中。
+确认本地安装了 `Python` 和 `ffmpeg`，并保证它们的实际安装路径均已加入环境变量（Environment Variable）中。
 
 确认能够开启当前电脑的命令行/终端工具：Windows 的 `CMD` 或 `PowerShell`，MacOS/Linux 的 `Terminal`.
 - 命令行工具可以通过 **键入命令**、**回车(Enter)键提交** 来完成你指定的任务
 - 用命令行可以通过形如 `python p.py` 的命令来执行 Python 脚本
 
-确认以上两行的工作都已完成且可用：在所使用的命令行工具中，
+确认以上两行的工作都已完成且可用：对于您选择使用的命令行工具，新开一个窗口
 - 使用 `python --version` 命令，能够得到版本号回显；
 - 使用 `ffmpeg -version` 命令，能够得到版本号及部分配置信息。
 
