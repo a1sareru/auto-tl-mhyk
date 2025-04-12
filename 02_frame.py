@@ -197,7 +197,10 @@ def extract_frames(video_path, debug, slides, enable_merge):
     # Select config preset based on aspect ratio
     preset = CONFIG_PRESETS[preset_key]
 
-    reference_path = os.path.abspath(KUROYURI_PATH)
+    # Note: for debugging, it is recommended to use the absolute path
+    # reference_path = os.path.abspath(KUROYURI_PATH)
+    # For now, just use the relative path for reference image
+    reference_path = KUROYURI_PATH
     print(f"Using reference image at: {reference_path}")
     if not os.path.exists(reference_path):
         print(f"Error: Reference image not found at: {reference_path}")
