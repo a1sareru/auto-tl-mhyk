@@ -17,9 +17,9 @@ KUROYURI_PATH = "kuroyuri.png"
 # 相似度阈值，用于识别高峰帧区间（默认值：0.97）
 THRESHOLD_RATIO = 0.95
 
-# Delay to add to the end of each subtitle interval (default: 0.1 seconds)
-# 每个字幕区间结束时添加的延迟（默认值：0.1秒）
-END_DELAY = 0.09  # seconds
+# Delay to add to the end of each subtitle interval (default: 0.06 seconds)
+# 每个字幕区间结束时添加的延迟（默认值：0.06秒）
+END_DELAY = 0.06  # seconds
 
 # Threshold for "Enable Merge" option (default: 0.996)
 # "启用合并"选项的阈值（默认值：0.996）
