@@ -19,7 +19,7 @@ THRESHOLD_RATIO = 0.95
 
 # Delay to add to the end of each subtitle interval (default: 0.1 seconds)
 # 每个字幕区间结束时添加的延迟（默认值：0.1秒）
-END_DELAY = 0.09 # seconds
+END_DELAY = 0.09  # seconds
 
 # Threshold for "Enable Merge" option (default: 0.996)
 # "启用合并"选项的阈值（默认值：0.996）
@@ -33,7 +33,7 @@ ENABLE_MERGE_REPORT_THRESHOLD = 0.992
 # 合并区间的持续时间阈值（默认值：0.5秒）
 GAP_DURATION_THRESHOLD = 0.35  # seconds
 
-### === User's Configuration End ===
+# === User's Configuration End ===
 
 # Configuration Presets
 
@@ -291,7 +291,7 @@ def extract_frames(video_path, debug, slides, enable_merge):
             gap_start_frame = previous_end_frame + 1
             gap_end_frame = current_start_frame - 1
             gap_duration = gap_end_frame - gap_start_frame + 1
- 
+
             # Use time-based merging threshold for robustness across frame rates
             gap_duration_sec = gap_duration / fps
             if gap_duration_sec < GAP_DURATION_THRESHOLD:
@@ -304,7 +304,7 @@ def extract_frames(video_path, debug, slides, enable_merge):
                     previous_end_frame / fps
                 ))
                 previous_start_frame, previous_end_frame = current_start_frame, current_end_frame
- 
+
         high_similarity_intervals.append((
             previous_start_frame / fps,
             previous_end_frame / fps
@@ -345,19 +345,25 @@ def extract_frames(video_path, debug, slides, enable_merge):
             sim = compute_similarity(current_gray, previous_slide)
 
             if sim >= ENABLE_MERGE_REPORT_THRESHOLD:
-                print(f"[INFO] slides similarity={sim:.4f} (vs previous #{len(merged_intervals):04d})")
+                print(f"[INFO] slides #{len(merged_intervals) - 1:04d} "
+                      f"similarity={sim:.4f} "
+                      f"(vs previous #{len(merged_intervals):04d})")
 
             if enable_merge and sim >= ENABLE_MERGE_THRESHOLD:
                 slide_index = len(merged_intervals)
-                print(f"[INFO] slides similarity={sim:.4f} => merge to #{slide_index:04d} (prev)")
+                print(f"[INFO] slides similarity={sim:.4f} "
+                      f"=> merge to #{slide_index:04d} (prev)")
                 # Rename the original slide image if it exists and hasn't been renamed yet
-                original_slide = os.path.join(slides_dir, f"{slide_index:04d}.png")
+                original_slide = os.path.join(
+                    slides_dir, f"{slide_index:04d}.png")
                 if os.path.exists(original_slide) and slide_index not in renamed_set:
-                    new_slide = os.path.join(slides_dir, f"{slide_index:04d}-a.png")
+                    new_slide = os.path.join(
+                        slides_dir, f"{slide_index:04d}-a.png")
                     os.rename(original_slide, new_slide)
                     renamed_set.add(slide_index)
                 count = merge_counts.get(slide_index, 0)
-                merged_path = os.path.join(slides_dir, f"{slide_index:04d}-merged-{count}.png")
+                merged_path = os.path.join(
+                    slides_dir, f"{slide_index:04d}-merged-{count}.png")
                 cv2.imwrite(merged_path, slide_frame)
                 merge_counts[slide_index] = count + 1
                 previous_end = end_time

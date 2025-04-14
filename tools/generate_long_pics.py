@@ -81,7 +81,8 @@ def main():
     long_images = create_long_images(images, slides_long_path, args.size)
 
     if args.pdf:
-        output_pdf = os.path.join(os.path.dirname(slides_path), "slides-long.pdf")
+        output_pdf_name = os.path.basename(slides_path) + "-long.pdf"
+        output_pdf = os.path.join(slides_path, output_pdf_name)
         create_pdf(images, output_pdf, args.size)
         print(f"PDF 生成完成: {output_pdf}")
 
