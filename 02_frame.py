@@ -345,7 +345,7 @@ def extract_frames(video_path, debug, slides, enable_merge):
             sim = compute_similarity(current_gray, previous_slide)
 
             if sim >= ENABLE_MERGE_REPORT_THRESHOLD:
-                print(f"[INFO] slides #{len(merged_intervals) - 1:04d} "
+                print(f"[INFO] slides #{len(merged_intervals) + 1:04d} "
                       f"similarity={sim:.4f} "
                       f"(vs previous #{len(merged_intervals):04d})")
 
