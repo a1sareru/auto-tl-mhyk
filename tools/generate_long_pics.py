@@ -62,11 +62,29 @@ def create_pdf(images, output_pdf, size=4):
 
     pdf.output(output_pdf, "F")
 
+def process_images_for_upload(images):
+    from PIL import ImageEnhance
+    processed_images = []
+    temp_dir = "/tmp/processed_upload_images"
+    os.makedirs(temp_dir, exist_ok=True)
+
+    for i, img_path in enumerate(images):
+        img = Image.open(img_path).convert("L")  # 转为灰度
+        img = ImageEnhance.Contrast(img).enhance(2.0)  # 增强对比
+        img = img.resize((img.width // 2, img.height // 2))  # 压缩大小
+
+        out_path = os.path.join(temp_dir, f"upload_{pad_number(i)}.png")
+        img.save(out_path)
+        processed_images.append(out_path)
+
+    return processed_images
+
 def main():
     parser = argparse.ArgumentParser(description="图片合成长图并可选生成 PDF")
     parser.add_argument("--slides", required=True, help="输入的图片文件夹路径")
     parser.add_argument("--size", type=int, default=4, help="每组合并的图片数量，默认为 4")
     parser.add_argument("--pdf", action="store_true", help="是否生成 PDF 文件")
+    parser.add_argument("--upload-pdf", action="store_true", help="是否生成上传用优化 PDF 文件")
     
     args = parser.parse_args()
     
@@ -78,10 +96,14 @@ def main():
         print("未找到任何图片文件")
         return
     
+    if args.upload_pdf:
+        images = process_images_for_upload(images)
+
     long_images = create_long_images(images, slides_long_path, args.size)
 
-    if args.pdf:
-        output_pdf_name = os.path.basename(slides_path) + "-long.pdf"
+    if args.pdf or args.upload_pdf:
+        suffix = "-upload.pdf" if args.upload_pdf else "-long.pdf"
+        output_pdf_name = os.path.basename(slides_path) + suffix
         output_pdf = os.path.join(slides_path, output_pdf_name)
         create_pdf(images, output_pdf, args.size)
         print(f"PDF 生成完成: {output_pdf}")

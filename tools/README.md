@@ -88,18 +88,20 @@ python ffmpeg_crop_batch.py --input <输入视频目录> --output <输出视频�
 ### 用法
 
 ```sh
-python generate_long_pics.py --slides <图片文件夹路径> [--size 4] [--pdf]
+python generate_long_pics.py --slides <图片文件夹路径> [--size 4] [--pdf] [--upload-pdf]
 ```
 
 **参数说明**
 - `--slides` : 输入的图片文件夹路径（必填）。
 - `--size`   : 每组合并的图片数量，默认为 4，可根据需要调整。
 - `--pdf`    : 是否生成 PDF 文件，添加该参数时会输出 PDF。
+- `--upload-pdf` : 是否生成用于上传优化的 PDF 文件，添加该参数时将对图片进行预处理后再生成 PDF。
 
 ### 处理逻辑
 1. 读取 `--slides` 目录下的所有图片，并按编号排序。
 2. 以 `--size` 为单位，将图片拼接成长图，并保存至 `slides-long` 目录。
 3. 若指定 `--pdf` 选项，则将生成的长图合并为 PDF 文件。
+4. 若指定 `--upload-pdf` 选项，将图片进行灰度、对比度增强、尺寸压缩等处理后，再合并为 PDF 文件。
 
 ### 注意事项
 - 依赖 `PIL` (Pillow) 进行图像处理和 `fpdf` 进行 PDF 生成，请确保已安装：
@@ -109,6 +111,8 @@ python generate_long_pics.py --slides <图片文件夹路径> [--size 4] [--pdf]
 - 输出的长图文件存放在 `slides-long/` 目录，PDF 文件名为 `slides-long.pdf`。
 - 默认每 4 张图片拼接为一张长图，可通过 `--size` 参数修改。
 - 若 `--pdf` 选项启用，则会将长图合并为单一 PDF 文件。
+- 若启用 `--upload-pdf`，将生成名为 `slides-upload.pdf` 的优化版 PDF，适用于减小体积或批量 OCR。
+- 图片会预处理为灰度图像、增强对比度并压缩尺寸，以减少生成文件大小。
 
 ## `merge_srt.py`
 
@@ -243,4 +247,3 @@ python test_paddle.py <图片路径>
   ```
 - 识别效果可能受图片质量影响，建议使用清晰的高分辨率图片。
 - 目前仅支持日语文本识别，其他语言请自行调整 `lang` 参数。
-
