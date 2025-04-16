@@ -202,6 +202,11 @@ python 02_frame.py --input input.mp4 --debug --slides
   - 但是如果发现总是出现被错误筛除的帧的话，请考虑调低。
 
 ### 2.3 `03_ocr.py`
+
+⚠️ 使用前，请参照 [官网文档](https://paddlepaddle.github.io/PaddleOCR/latest/quick_start.html)
+在本地安装 `paddlepaddle`。
+CPU 版本和 GPU 版本：请按需选择 ~~我没装过 GPU 版本，不知道~~。
+
 该脚本用于从上一节得到的 `{video}-slides` 目录下的图像中提取字幕文本。
 它使用 paddleOCR 识别字幕内容。
 
