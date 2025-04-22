@@ -331,7 +331,7 @@ def extract_frames(video_path, debug, slides, enable_merge):
 
     for interval in high_similarity_intervals:
         start_time, end_time = interval
-        frame_target = int(start_time * fps) + 2
+        frame_target = SLIDES_OFFSET + int(start_time * fps)
         cap = cv2.VideoCapture(video_path)
         cap.set(cv2.CAP_PROP_POS_FRAMES, frame_target)
         ret, frame = cap.read()
@@ -391,7 +391,7 @@ def extract_frames(video_path, debug, slides, enable_merge):
         seq = 1
         prev_end = 0.0
         for interval in high_similarity_intervals:
-            curr_end = interval[1] + END_DELAY
+            curr_end = END_DELAY + interval[1]
 
             # Shift the start time slightly after the previous end (except for the first interval)
             adjusted_start = prev_end if prev_end > 0 else prev_end
