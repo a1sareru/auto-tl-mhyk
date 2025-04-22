@@ -33,6 +33,10 @@ ENABLE_MERGE_REPORT_THRESHOLD = 0.992
 # 合并区间的持续时间阈值（默认值：0.5秒）
 GAP_DURATION_THRESHOLD = 0.35  # seconds
 
+# Offset for slide extraction (default: 0)
+# 幻灯片提取的偏移量（默认值：+2）
+SLIDES_OFFSET = +2
+
 # === User's Configuration End ===
 
 # Configuration Presets
