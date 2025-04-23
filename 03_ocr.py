@@ -5,16 +5,20 @@ import Levenshtein
 import pandas as pd
 from translate import Translator
 
+name_mapping = {
+    "オズ": "Oz", "アーサー": "Arthur", "カイン": "Cain", "リケ": "Riquet", "スノウ": "Snow",
+    "ホワイト": "White", "ミスラ": "Mithra", "オーエン": "Owen", "ブラッドリー": "Bradley",
+    "ファウスト": "Faust", "シノ": "Shino", "ヒースクリフ": "Heathcliff", "ネロ": "Nero",
+    "シャイロック": "Shylock", "ムル": "Murr", "クロエ": "Chloe", "ラスティカ": "Rustica",
+    "フィガロ": "Figaro", "ルチル": "Rutile", "レノックス": "Lennox", "ミチル": "Mitile",
+
+    # Add more mappings as needed
+    "晶": "晶",
+    "ドラモンド": "Drummond", "ヴィンセント": "Vincent", "ルキーノ": "Luchino",
+    "アレク": "Alec",
+}
 
 def extract_text_from_image(image_path, ocr, seq):
-    name_mapping = {
-        "オズ": "Oz", "アーサー": "Arthur", "カイン": "Cain", "リケ": "Riquet", "スノウ": "Snow",
-        "ホワイト": "White", "ミスラ": "Mithra", "オーエン": "Owen", "ブラッドリー": "Bradley",
-        "ファウスト": "Faust", "シノ": "Shino", "ヒースクリフ": "Heathcliff", "ネロ": "Nero",
-        "シャイロック": "Shylock", "ムル": "Murr", "クロエ": "Chloe", "ラスティカ": "Rustica",
-        "フィガロ": "Figaro", "ルチル": "Rutile", "レノックス": "Lennox", "ミチル": "Mitile"
-    }
-
     def replace_names_in_text(text, mapping):
         for jp_name, en_name in mapping.items():
             text = text.replace(jp_name, en_name)
@@ -127,11 +131,11 @@ def main():
         use_dilation=True  # Enhance character edges to improve recognition
     )
 
-    data = process_images_to_csv(args.slides_path, ocr, args.chn)
+    data = process_images_to_csv(args.slides, ocr, args.chn)
 
-    slides_folder_name = os.path.basename(os.path.normpath(args.slides_path))
+    slides_folder_name = os.path.basename(os.path.normpath(args.slides))
     csv_filename = f"{slides_folder_name.replace('-slides', '')}-ocr-results.csv" if '-slides' in slides_folder_name else "-ocr-results.csv"
-    csv_path = os.path.join(os.path.dirname(args.slides_path), csv_filename)
+    csv_path = os.path.join(os.path.dirname(args.slides), csv_filename)
     if os.path.exists(csv_path):
         print(f"[WARNING] File {csv_filename} already exists and will be overwritten.")
     

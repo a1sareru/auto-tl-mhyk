@@ -230,7 +230,7 @@ python 03_ocr.py --slides <slides目录路径> [--chn]
 * `--chn`         : 启用日语到中文的自动翻译（可选）。
 
 **处理逻辑**
-1. 读取 `slides-path` 目录下的 PNG 图片。
+1. 读取 `slides` 目录下的 PNG 图片。
 2. 依次进行 OCR 识别，提取文本内容：
     - 自动检测角色名称，并替换为英文名称。
     - 进行额外的单行 OCR，提高准确度。
@@ -240,7 +240,7 @@ python 03_ocr.py --slides <slides目录路径> [--chn]
 
 **注意事项**
 * 依赖 `paddleocr` 进行 OCR 识别，请确保其已安装。
-* 默认会在 `slides-path` 的同级目录生成 `{video}-ocr-results.csv` 作为输出文件。
+* 默认会在 `slides` 的同级目录生成 `{video}-ocr-results.csv` 作为输出文件。
 * `--chn` 选项使用 `translate` 库进行翻译，翻译质量有限。
 
 **使用示例**

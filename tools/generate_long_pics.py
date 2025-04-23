@@ -103,7 +103,7 @@ def main():
 
     if args.pdf or args.upload_pdf:
         suffix = "-upload.pdf" if args.upload_pdf else "-long.pdf"
-        output_pdf_name = os.path.basename(slides_path) + suffix
+        output_pdf_name = os.path.join(os.path.dirname(os.path.dirname(slides_path)), os.path.basename(slides_path) + suffix)
         output_pdf = os.path.join(slides_path, output_pdf_name)
         create_pdf(images, output_pdf, args.size)
         print(f"PDF 生成完成: {output_pdf}")
