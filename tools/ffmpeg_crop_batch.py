@@ -23,7 +23,8 @@ for filename in os.listdir(input_dir):
         cmd = [
             "ffmpeg",
             "-i", input_path,
-            "-vf", "crop=1080:2340:0:30",
+            "-vf", "crop=1080:1920:0:284",
+            # "-vf", "crop=1080:2340:0:30",
             "-y",  # 自动覆盖
             output_path
         ]

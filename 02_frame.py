@@ -82,7 +82,8 @@ CONFIG_PRESETS = {
         "YURI_X2_RATIO": 0.945,
         "YURI_Y2_RATIO": 0.792,
         "SLIDE_X1_RATIO": 0.082,
-        "SLIDE_Y1_RATIO": 0.641,
+        "SLIDE_Y1_RATIO": 0.667, # 无人物姓名
+        # "SLIDE_Y1_RATIO": 0.641, # 有人物姓名
         "SLIDE_X2_RATIO": 0.884,
         "SLIDE_Y2_RATIO": 0.773
     }
