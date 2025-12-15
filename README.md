@@ -131,7 +131,7 @@ ffmpeg -i input.mp4 -vf "crop=width:height:x:y" output.mp4
 
 **用法**
 ```sh
-python 02_frame.py --input <输入视频路径> [--output <输出目录>] [--debug] [--slides]
+python 02_frame.py --input <输入视频路径> [--output <输出目录>] [--debug] [--slides] [--ass]
 ```
 
 **参数说明**
@@ -146,6 +146,7 @@ python 02_frame.py --input <输入视频路径> [--output <输出目录>] [--deb
         * 原始对话框图片将重命名为 `####-a.png`
         * 对应字幕被合并的对话框图片保存为 `####-merged-x.png`（`x` 表示第几张被合并）
     * 若不添加该选项，则不考虑检查/合并相邻相似字幕。
+* `--ass` : 启用 `ass` 声称
 
 **处理逻辑**
 1. 读取输入视频信息（帧率、宽度、高度）。
