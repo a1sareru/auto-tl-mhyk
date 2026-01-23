@@ -1,7 +1,7 @@
 # auto-tl-mhyk
 
 >有问题可以直接提 issue，
->或者联系邮箱 [kmbk.kr.dev[AT]outlook.jp](mailto:kmbk.kr.dev@outlook.jp).
+>或者联系邮箱 [a1sareru[AT]outlook.jp](mailto:a1sareru@outlook.jp).
 
 >写 README 的主要目的是防止开发者自己想不起来用法。
 >看得懂或者看不懂都是正常的。
